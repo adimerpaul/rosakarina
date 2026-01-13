@@ -57,7 +57,7 @@ class User extends Authenticatable
     public function getColorAttribute(){
 //        roles: ['Farmacia', 'Secretaria', 'Administrador'],
         $rol = $this->role;
-        if($rol == 'Farmacia'){
+        if($rol == 'Vendedor'){
             return 'green';
         }elseif($rol == 'Secretaria'){
             return 'blue';

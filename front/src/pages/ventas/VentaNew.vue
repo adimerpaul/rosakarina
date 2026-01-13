@@ -174,22 +174,22 @@
               <div class="col-12 col-md-3 q-pa-xs">
                 <q-input v-model="venta.email" outlined dense label="Email"/>
               </div>
-              <div class="col-12 col-md-3 q-pa-xs">
-                <q-select v-model="venta.tipo_venta" outlined dense label="Tipo de venta"
-                          :options="['Internado', 'Externo']"/>
-              </div>
+<!--              <div class="col-12 col-md-3 q-pa-xs">-->
+<!--                <q-select v-model="venta.tipo_venta" outlined dense label="Tipo de venta"-->
+<!--                          :options="['Internado', 'Externo']"/>-->
+<!--              </div>-->
               <!-- 🔵 Doctor -->
-              <div class="col-12 col-md-6 q-pa-xs">
-                <q-select
-                  v-model="venta.doctor_id"
-                  :options="doctores.map(d => ({ label: `${d.nombre} — ${d.especialidad || 'SN'}`, value: d.id }))"
-                  outlined dense
-                  label="Doctor"
-                  clearable
-                  emit-value
-                  map-options
-                />
-              </div>
+<!--              <div class="col-12 col-md-6 q-pa-xs">-->
+<!--                <q-select-->
+<!--                  v-model="venta.doctor_id"-->
+<!--                  :options="doctores.map(d => ({ label: `${d.nombre} — ${d.especialidad || 'SN'}`, value: d.id }))"-->
+<!--                  outlined dense-->
+<!--                  label="Doctor"-->
+<!--                  clearable-->
+<!--                  emit-value-->
+<!--                  map-options-->
+<!--                />-->
+<!--              </div>-->
               <!--              <div class="col-12 complemtno-->
               <div class="col-12 col-md-3 q-pa-xs">
                 <q-input v-model="venta.complemento" outlined dense label="Complemento"/>
@@ -197,7 +197,7 @@
               <div class="col-12 col-md-3 q-pa-xs">
                 <q-select v-model="venta.tipo_pago" outlined dense label="Tipo de pago" :options="['Efectivo', 'QR']"/>
               </div>
-              <div class="col-12 col-md-6 q-pa-xs">
+              <div class="col-12 col-md-4 q-pa-xs">
                 <q-select
                   v-model="venta.codigoTipoDocumentoIdentidad"
                   outlined dense label="Tipo de documento"
@@ -206,10 +206,14 @@
                   map-options
                 />
               </div>
-<!--              fecha-->
-              <div class="col-12 col-md-6 q-pa-xs">
-                <q-input v-model="venta.fecha" outlined dense label="Fecha de venta" type="date"/>
+<!--              detalles-->
+              <div class="col-12 q-pa-xs">
+                <q-input v-model="venta.detalles" outlined dense label="Detalles adicionales"/>
               </div>
+<!--              fecha-->
+<!--              <div class="col-12 col-md-6 q-pa-xs">-->
+<!--                <q-input v-model="venta.fecha" outlined dense label="Fecha de venta" type="date"/>-->
+<!--              </div>-->
 
               <div class="col-12 q-pa-xs">
                 <q-markup-table dense wrap-cells flat bordered>
@@ -580,6 +584,7 @@ export default {
         receta_id: this.receta_id,
         doctor_id: this.venta.doctor_id,
         fecha: this.venta.fecha,
+        detalles: this.venta.detalles,
       }).then((res) => {
         this.ventaDialog = false;
         this.$alert?.success?.("Venta realizada con éxito");

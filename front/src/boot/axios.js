@@ -33,7 +33,7 @@ export default boot(({ app, router }) => {
       return lower.charAt(0).toUpperCase() + lower.slice(1)
     },
   }
-  const token = localStorage.getItem('tokenEducation')
+  const token = localStorage.getItem('tokenRosa')
   if (token) {
     app.config.globalProperties.$axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     app.config.globalProperties.$axios.get('me').then(response => {
@@ -43,7 +43,7 @@ export default boot(({ app, router }) => {
       useCounterStore().permissions = response.data.user.permissions
     }).catch(error => {
       console.log(error)
-      localStorage.removeItem('tokenEducation')
+      localStorage.removeItem('tokenRosa')
       useCounterStore().isLogged = false
       useCounterStore().user = {}
       router.push('/login')

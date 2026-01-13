@@ -118,7 +118,7 @@
             clickable
             :to="link.link"
             exact
-            class="text-grey"
+            class="text-white"
             active-class="menu"
             v-if="link && $store.permissions.some(p => p.name === link.can || link.can === 'Todos')"
           >
@@ -161,8 +161,8 @@ export default {
       linksList: [
         { title: 'Principal', icon: 'dashboard', link: '/', can: 'Todos'},
         { title: 'Usuarios', icon: 'supervisor_account', link: '/usuarios', can: 'Usuarios'},
-        { title: 'Doctores', icon: 'medical_services', link: '/doctores', can: 'Doctores'},
-        { title: 'Pacientes', icon: 'local_hospital', link: '/pacientes', can: 'Pacientes'},
+        // { title: 'Doctores', icon: 'medical_services', link: '/doctores', can: 'Doctores'},
+        { title: 'Clientes', icon: 'person', link: '/pacientes', can: 'Pacientes'},
         { title: 'Productos', icon: 'inventory_2', link: '/productos', can: 'Productos'},
         { title: 'Ventas', icon: 'sell', link: '/venta', can: 'Ventas'},
         { title: 'Venta Nueva', icon: 'add_shopping_cart', link: '/ventaNuevo', can: 'Nueva venta'},
@@ -192,7 +192,7 @@ export default {
         .onOk(() => {
           this.$store.isLogged = false
           this.$store.user = {}
-          localStorage.removeItem('tokenEducation')
+          localStorage.removeItem('tokenRosa')
           this.$router.push('/login')
         })
     },

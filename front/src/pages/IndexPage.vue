@@ -4,7 +4,7 @@
     <q-card class="q-pa-md q-mb-md shadow-1" bordered>
       <div class="row items-center q-col-gutter-md">
         <div class="col-12 col-md">
-          <div class="text-h6 text-weight-bold">Dashboard · La Fuente</div>
+          <div class="text-h6 text-weight-bold">Dashboard </div>
           <div class="text-caption text-grey-7">Resumen de ventas, compras y rendimiento por usuario</div>
         </div>
 

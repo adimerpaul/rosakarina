@@ -81,7 +81,7 @@ export default {
         this.$store.user = user
         this.$store.permissions = user.permissions
         this.$store.env = res.data.datos
-        localStorage.setItem('tokenEducation', token)
+        localStorage.setItem('tokenRosa', token)
         this.$alert.success('Bienvenido ' + user.name)
         this.$router.push('/')
       }).catch(error => {

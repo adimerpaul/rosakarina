@@ -3,7 +3,9 @@
     <q-table :rows="users" :columns="columns" dense wrap-cells flat bordered :rows-per-page-options="[0]"
               title="Usuarios" :filter="filter">
       <template v-slot:top-right>
-          <q-btn color="primary" label="Nuevo" @click="userNew" outline no-caps  icon="add_circle_outline" :loading="loading" />
+<!--        btn actulizar-->
+        <q-btn color="primary" label="Actualizar" @click="usersGet" no-caps  icon="refresh" :loading="loading" class="q-mr-sm" />
+          <q-btn color="green" label="Nuevo" @click="userNew" no-caps  icon="add_circle_outline" :loading="loading" />
           <q-input v-model="filter" label="Buscar" dense outlined >
             <template v-slot:append>
               <q-icon name="search" />
@@ -182,7 +184,7 @@ export default {
       actionPeriodo: '',
       gestiones: [],
       filter: '',
-      roles: ['Farmacia', 'Secretaria', 'Administrador'],
+      roles: ['Vendedor', 'Administrador'],
       columns: [
         { name: 'actions', label: 'Acciones', align: 'center' },
         { name: 'name', label: 'Nombre', align: 'left', field: 'name' },

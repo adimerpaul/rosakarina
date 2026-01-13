@@ -44,9 +44,42 @@ class DatabaseSeeder extends Seeder
         $sqlContent = file_get_contents($sqlFIle);
         DB::unprepared($sqlContent);
 
-        $sqlFIle = base_path('database/seeders/users.sql');
-        $sqlContent = file_get_contents($sqlFIle);
-        DB::unprepared($sqlContent);
+//        $sqlFIle = base_path('database/seeders/users.sql');
+//        $sqlContent = file_get_contents($sqlFIle);
+//        DB::unprepared($sqlContent);
+//        Usuarios:
+//        Administrador: Roger Vigabriel
+//CI:5725839
+//    Karina Quiñonez
+//CI: 7264841
+//    Paola Flores
+//CI:7320086
+//    Jessica Carata
+//CI: 14425737
+        User::create([
+            'name' => 'Roger Vigabriel',
+            'username' => 'roger',
+            'password' => bcrypt('5725839'),
+            'role' => 'Administrador',
+        ]);
+        User::create([
+            'name' => 'Karina Quiñonez',
+            'username' => 'karina',
+            'password' => bcrypt('7264841'),
+            'role' => 'Vendedor',
+        ]);
+        User::create([
+            'name' => 'Paola Flores',
+            'username' => 'paola',
+            'password' => bcrypt('7320086'),
+            'role' => 'Vendedor',
+        ]);
+        User::create([
+            'name' => 'Jessica Carata',
+            'username' => 'jessica',
+            'password' => bcrypt('14425737'),
+            'role' => 'Vendedor',
+        ]);
 
         $permisos = [
             'Usuarios', 'Pacientes', 'Productos', 'Ventas', 'Nueva venta',

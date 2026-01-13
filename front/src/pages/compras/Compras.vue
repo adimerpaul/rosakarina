@@ -103,6 +103,7 @@
               <q-item-section>Anular</q-item-section>
             </q-item>
           </q-btn-dropdown>
+<!--          <pre>{{$store.env}}</pre>-->
         </td>
         <td>{{ compra.id }}</td>
         <td>{{ compra.fecha }} {{ compra.hora }}</td>

@@ -11,12 +11,53 @@ use App\Models\VentaDetalle;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 class VentaController extends Controller
 {
-    function ventasDevolverProducto(Request $request){
-//        venta_id: ventaId,
-//          venta_detalle_id: venta_detalle_id,
-//          cantidad: cantidadNum
+    // ✅ NUEVO: registrar gasto sin tabla extra
+    public function storeGasto(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $fecha = $request->input('fecha') ?? date('Y-m-d');
+            $concepto = trim((string)$request->input('concepto', ''));
+            $monto = (float)$request->input('monto', 0);
+            $tipoPago = $request->input('tipo_pago', 'Efectivo');
+
+            if ($concepto === '') abort(422, 'Ingrese el concepto del gasto.');
+            if ($monto <= 0) abort(422, 'Ingrese un monto válido.');
+
+            /** @var Venta $venta */
+            $venta = Venta::create([
+                'user_id'          => auth()->id(),
+                'cliente_id'       => null,
+                'fecha'            => $fecha,
+                'hora'             => date('H:i:s'),
+                'ci'               => '0',
+                'nombre'           => $concepto,
+                'estado'           => 'Activo',
+
+                // ✅ clave: aquí va el comprobante
+                'tipo_comprobante' => 'Gastos',
+
+                // no afecta chips Interno/Externo si no quieres, lo dejas null o algo fijo
+                'tipo_venta'       => null,
+
+                'total'            => $monto,
+                'tipo_pago'        => $tipoPago,
+                'pagado_interno'   => false,
+            ]);
+
+            DB::commit();
+            return Venta::with('user', 'cliente', 'ventaDetalles')->findOrFail($venta->id);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error al guardar gasto: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function ventasDevolverProducto(Request $request)
+    {
         DB::beginTransaction();
         try {
             $ventaId = (int)$request->input('venta_id', 0);
@@ -45,6 +86,7 @@ class VentaController extends Controller
             }
 
             // Actualizar detalle de venta
+            $precioDet = (float)$vd->precio; // guardar antes por si se borra
             $vd->cantidad = (float)$vd->cantidad - $cantidad;
             if ($vd->cantidad <= 1e-9) {
                 $vd->delete();
@@ -54,7 +96,8 @@ class VentaController extends Controller
 
             // Actualizar total de venta
             $venta = Venta::where('id', $ventaId)->lockForUpdate()->firstOrFail();
-            $venta->total = (float)$venta->total - ($cantidad * (float)$vd->precio);
+            $venta->total = (float)$venta->total - ($cantidad * $precioDet);
+            if ((float)$venta->total < 0) $venta->total = 0;
             $venta->save();
 
             DB::commit();
@@ -64,9 +107,9 @@ class VentaController extends Controller
             return response()->json(['message' => 'No se pudo procesar la devolución: ' . $e->getMessage()], 500);
         }
     }
+
     public function proformaPacientePdf(\App\Models\Paciente $paciente)
     {
-        // Trae las ventas vinculadas (paciente_ventas) con la venta y sus detalles
         $paciente->load([
             'pacienteVentas' => function ($q) {
                 $q->orderBy('fecha', 'asc');
@@ -77,12 +120,11 @@ class VentaController extends Controller
             'pacienteVentas.user'
         ]);
 
-        // Total general
         $totalGeneral = 0;
         foreach ($paciente->pacienteVentas as $pv) {
             $venta = $pv->venta;
             if (!$venta) continue;
-            // si no viene total, sumar por si acaso
+
             if ($venta->total === null) {
                 $subtotal = 0;
                 foreach ($venta->ventaDetalles as $d) {
@@ -96,15 +138,15 @@ class VentaController extends Controller
         $hoy = now();
 
         $pdf = Pdf::loadView('pdf.proforma_paciente', [
-            'paciente'     => $paciente,
+            'paciente'       => $paciente,
             'pacienteVentas' => $paciente->pacienteVentas,
-            'totalGeneral' => $totalGeneral,
-            'hoy'          => $hoy,
-        ])->setPaper('letter'); // tamaño carta; usa 'a4' si prefieres
+            'totalGeneral'   => $totalGeneral,
+            'hoy'            => $hoy,
+        ])->setPaper('letter');
 
         return $pdf->stream('proforma_paciente_'.$paciente->id.'.pdf');
-        // ->download('proforma_paciente_'.$paciente->id.'.pdf');
     }
+
     public function searchCliente(Request $request)
     {
         $nit = trim((string)$request->input('nit', ''));
@@ -112,6 +154,7 @@ class VentaController extends Controller
 
         $c = Cliente::where('ci', $nit)->first();
         if (!$c) return response()->json([]);
+
         return response()->json([
             'nombre' => $c->nombre,
             'email' => $c->email ?? null,
@@ -124,11 +167,9 @@ class VentaController extends Controller
     {
         DB::beginTransaction();
         try {
-            // 1) Cliente
             $cliente = $this->clienteUpdateOrCreate($request);
 
             $fecha = $request->input('fecha') ?? date('Y-m-d');
-            // 2) Venta cabecera
             $request->merge([
                 'user_id'    => auth()->id(),
                 'cliente_id' => $cliente->id,
@@ -136,15 +177,11 @@ class VentaController extends Controller
                 'hora'       => date('H:i:s'),
                 'estado'     => 'Activo',
                 'tipo_comprobante' => 'Venta',
-                'tipo_venta' => ($request->input('tipo_venta')=='Interno' || $request->input('tipo_venta')=='Internado')?'Internado':'Externo',
+                'tipo_venta' => ($request->input('tipo_venta')=='Interno' || $request->input('tipo_venta')=='Internado') ? 'Internado' : 'Externo',
             ]);
-            /** @var Venta $venta */
-            $venta = Venta::create($request->only([
-                'user_id','cliente_id','fecha','hora','ci','nombre','estado',
-                'tipo_comprobante','total','tipo_venta','tipo_pago','pagado_interno','doctor_id'
-            ]));
 
-            // 3) Detalles con LOTES (usa compra_detalles.cantidad_venta como "disponible")
+            $venta = Venta::create($request->all());
+
             $productos = (array)$request->input('productos', []);
             $total = 0.0;
 
@@ -152,6 +189,7 @@ class VentaController extends Controller
                 $productoId = (int)($item['producto_id'] ?? 0);
                 $cantidad   = (float)($item['cantidad'] ?? 0);
                 $precio     = (float)($item['precio'] ?? 0);
+
                 if ($productoId <= 0 || $cantidad <= 0) {
                     abort(422, 'Producto o cantidad inválida.');
                 }
@@ -159,7 +197,6 @@ class VentaController extends Controller
                 $producto = Producto::select('id','nombre')->findOrFail($productoId);
                 $nombreProducto = $producto->nombre;
 
-                // Si vino un lote concreto, usarlo
                 if (!empty($item['compra_detalle_id'])) {
                     $loteId = (int)$item['compra_detalle_id'];
 
@@ -174,7 +211,7 @@ class VentaController extends Controller
                         abort(422, 'El lote seleccionado no está activo.');
                     }
                     if ((float)$cd->cantidad_venta < $cantidad) {
-                        abort(422, "Stock insuficiente para el producto '{$nombreProducto}' en el lote {$cd->lote} (disponible: {$cd->cantidad_venta}, solicitado: {$cantidad}).");
+                        abort(422, "Stock insuficiente para '{$nombreProducto}' (disponible: {$cd->cantidad_venta}).");
                     }
 
                     VentaDetalle::create([
@@ -188,7 +225,6 @@ class VentaController extends Controller
                         'fecha_vencimiento' => $cd->fecha_vencimiento,
                     ]);
 
-                    // Descontar del lote
                     $cd->cantidad_venta = (float)$cd->cantidad_venta - $cantidad;
                     $cd->save();
 
@@ -196,8 +232,8 @@ class VentaController extends Controller
                     continue;
                 }
 
-                // FIFO por fecha de vencimiento (nulos al final)
                 $restante = $cantidad;
+
                 $lotes = CompraDetalle::where('producto_id', $productoId)
                     ->where('estado', 'Activo')
                     ->whereNull('deleted_at')
@@ -226,16 +262,13 @@ class VentaController extends Controller
                     $l->cantidad_venta = (float)$l->cantidad_venta - $take;
                     $l->save();
 
-                    $total    += $take * $precio;
+                    $total += $take * $precio;
                     $restante -= $take;
                 }
 
-                if ($restante > 1e-9) {
-                    abort(422, 'Stock insuficiente por lotes.');
-                }
+                if ($restante > 1e-9) abort(422, 'Stock insuficiente por lotes.');
             }
 
-            // 4) Totales + receta
             $venta->update(['total' => $total]);
 
             if ($request->filled('receta_id')) {
@@ -246,7 +279,6 @@ class VentaController extends Controller
 
             DB::commit();
 
-            // Respuesta con usuario, cliente y detalles + producto
             return Venta::with('user', 'ventaDetalles.producto', 'cliente','doctor')->findOrFail($venta->id);
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -266,21 +298,21 @@ class VentaController extends Controller
                 return $venta;
             }
 
-            // Restaurar stock lote x lote
-            foreach ($venta->ventaDetalles as $det) {
-                if ($det->compra_detalle_id) {
-                    $cd = CompraDetalle::where('id', $det->compra_detalle_id)->lockForUpdate()->first();
-                    if ($cd) {
-                        $cd->cantidad_venta = (float)$cd->cantidad_venta + (float)$det->cantidad;
-                        $cd->save();
+            // Si es GASTO no toca lotes
+            if (strtolower((string)$venta->tipo_comprobante) !== 'gastos') {
+                foreach ($venta->ventaDetalles as $det) {
+                    if ($det->compra_detalle_id) {
+                        $cd = CompraDetalle::where('id', $det->compra_detalle_id)->lockForUpdate()->first();
+                        if ($cd) {
+                            $cd->cantidad_venta = (float)$cd->cantidad_venta + (float)$det->cantidad;
+                            $cd->save();
+                        }
                     }
                 }
+
+                DB::table('paciente_ventas')->where('venta_id', $venta->id)->delete();
             }
 
-            // 3) Desligar de paciente para que NO aparezca en el historial del paciente
-            DB::table('paciente_ventas')->where('venta_id', $venta->id)->delete();
-
-            // 4) Marcar como anulada
             $venta->estado = 'Anulada';
             $venta->save();
 
@@ -295,6 +327,12 @@ class VentaController extends Controller
     public function tipoVentasChange(Request $request, $id)
     {
         $venta = Venta::findOrFail($id);
+
+        // Si es gasto, no cambia tipo_venta
+        if (strtolower((string)$venta->tipo_comprobante) === 'gastos') {
+            return $venta;
+        }
+
         $venta->tipo_venta = $venta->tipo_venta === 'Internado' ? 'Externo' : 'Internado';
         $venta->save();
         return $venta;

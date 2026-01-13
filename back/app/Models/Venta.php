@@ -21,7 +21,8 @@ class Venta extends Model{
         'tipo_pago',
         'pagado_interno',
         'doctor_id',
-        'paciente_id_ref'
+        'paciente_id_ref',
+        'detalles'
     ];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
     function user(){
@@ -35,13 +36,20 @@ class Venta extends Model{
     }
     protected $appends = ['detailsText'];
     function getDetailsTextAttribute(){
-        $detailsText = '';
+//        $detailsText = '';
+//        foreach ($this->ventaDetalles as $ventaDetalle) {
+//            $detailsText .= $ventaDetalle->cantidad . ' ' . $ventaDetalle->nombre . ',';
+////            $detailsText .= $ventaDetalle->cantidad . ' ' . isset($ventaDetalle->producto) ? $ventaDetalle->producto->nombre : 'Producto Eliminado' . ',';
+//        }
+//        $detailsText = substr($detailsText, 0, -1);
+//        return $detailsText;
+        $detailsTextHtml = '<ul style="padding: 0; margin: 0;">';
         foreach ($this->ventaDetalles as $ventaDetalle) {
-            $detailsText .= $ventaDetalle->cantidad . ' ' . $ventaDetalle->nombre . ',';
-//            $detailsText .= $ventaDetalle->cantidad . ' ' . isset($ventaDetalle->producto) ? $ventaDetalle->producto->nombre : 'Producto Eliminado' . ',';
+            $detailsTextHtml .= "<li style=\"list-style-type: none; margin: 0; padding: 0;font-size: 9px\">"
+                . $ventaDetalle->cantidad . ' ' . strtolower($ventaDetalle->nombre)
+                . "</li>";
         }
-        $detailsText = substr($detailsText, 0, -1);
-        return $detailsText;
+        return $detailsTextHtml;
     }
     public function doctor()
     {

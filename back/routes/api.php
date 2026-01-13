@@ -96,6 +96,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index']);
 
     Route::get('/productos-precios', [App\Http\Controllers\ProductoController::class, 'precios']);
+    Route::post('ventasGasto', [VentaController::class, 'storeGasto']);
+
 
 });
 Route::get('historial_medicos/{id}/pdf', [App\Http\Controllers\HistorialMedicoController::class, 'generatePdf']);
