@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/productos/{producto}', [App\Http\Controllers\ProductoController::class, 'destroy']);
 
     Route::post('/searchCliente', [App\Http\Controllers\ClienteController::class, 'searchCliente']);
+    Route::apiResource('clientes', App\Http\Controllers\ClienteController::class);
 
     Route::post('/ventas', [App\Http\Controllers\VentaController::class, 'store']);
     Route::get('/ventas', [App\Http\Controllers\VentaController::class, 'index']);

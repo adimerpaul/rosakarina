@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Compra;
 use App\Models\Venta;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -20,92 +18,90 @@ class DashboardController extends Controller
             $hasta = now()->toDateString();
         }
 
+        // Helpers
+        $isGastoSql = "LOWER(COALESCE(tipo_comprobante,'')) = 'gastos'";
+        $isVentaSql = "LOWER(COALESCE(tipo_comprobante,'')) <> 'gastos'";
+
         // ==========================
-        // ÚLTIMAS VENTAS (ACTIVAS)
+        // ÚLTIMOS MOVIMIENTOS (VENTAS + GASTOS)
         // ==========================
-        $ventas = Venta::with(['doctor', 'user'])
+        $movimientos = Venta::with(['doctor', 'user', 'cliente', 'ventaDetalles'])
             ->where('estado', 'Activo')
             ->whereBetween('fecha', [$desde, $hasta])
             ->orderByDesc('fecha')
             ->orderByDesc('hora')
             ->orderByDesc('id')
-            ->take(10)
-            ->get()
-            // normaliza el texto (si te quedó "Interno" antiguo)
-            ->map(function ($v) {
-                if (($v->tipo_venta ?? '') === 'Interno') $v->tipo_venta = 'Internado';
-                return $v;
-            });
+            ->take(15)
+            ->get();
 
         // ==========================
         // KPIs (solo ACTIVAS)
-        // Internado = Internado o Interno (legacy)
+        // ventasTotal: tipo_comprobante != gastos
+        // gastosTotal: tipo_comprobante == gastos
+        // ganancia: ventas - gastos
         // ==========================
-        $totales = Venta::selectRaw("
-                SUM(CASE WHEN tipo_venta IN ('Internado','Interno') THEN total ELSE 0 END) as internado,
-                SUM(CASE WHEN tipo_venta='Externo' THEN total ELSE 0 END) as externo
+        $kpis = Venta::selectRaw("
+                SUM(CASE WHEN {$isVentaSql} THEN total ELSE 0 END) as ventas,
+                SUM(CASE WHEN {$isGastoSql} THEN total ELSE 0 END) as gastos
             ")
             ->where('estado', 'Activo')
             ->whereBetween('fecha', [$desde, $hasta])
             ->first();
 
+        $ventasTotal = (float) ($kpis->ventas ?? 0);
+        $gastosTotal = (float) ($kpis->gastos ?? 0);
+        $ganancia    = $ventasTotal - $gastosTotal;
+
         // ==========================
-        // Ventas diarias (solo ACTIVAS)
+        // MOVIMIENTOS DIARIOS (2 series: ventas y gastos)
         // ==========================
-        $ventasPorDia = Venta::where('estado', 'Activo')
+        $porDia = Venta::where('estado', 'Activo')
             ->whereBetween('fecha', [$desde, $hasta])
-            ->selectRaw('DATE(fecha) as dia, SUM(total) as total')
+            ->selectRaw("
+                DATE(fecha) as dia,
+                SUM(CASE WHEN {$isVentaSql} THEN total ELSE 0 END) as ventas,
+                SUM(CASE WHEN {$isGastoSql} THEN total ELSE 0 END) as gastos
+            ")
             ->groupBy('dia')
             ->orderBy('dia')
             ->get();
 
-        $dias = $ventasPorDia->pluck('dia');
-        $ventasDiarias = $ventasPorDia->pluck('total');
+        $dias = $porDia->pluck('dia');
+        $ventasDiarias = $porDia->pluck('ventas')->map(fn($v) => (float)$v);
+        $gastosDiarios = $porDia->pluck('gastos')->map(fn($v) => (float)$v);
 
         // ==========================
-        // Series mensuales del AÑO ACTUAL
+        // SERIES MENSUALES (AÑO ACTUAL): Ventas vs Gastos
         // ==========================
         $anio = now()->year;
 
         $ventasMesRaw = Venta::where('estado', 'Activo')
             ->whereYear('fecha', $anio)
-            ->selectRaw('MONTH(fecha) as m, SUM(total) as total')
+            ->selectRaw("MONTH(fecha) as m, SUM(CASE WHEN {$isVentaSql} THEN total ELSE 0 END) as total")
             ->groupBy('m')
             ->pluck('total', 'm');
 
-        $comprasMesRaw = Compra::where('estado', 'Activo')
+        $gastosMesRaw = Venta::where('estado', 'Activo')
             ->whereYear('fecha', $anio)
-            ->selectRaw('MONTH(fecha) as m, SUM(total) as total')
+            ->selectRaw("MONTH(fecha) as m, SUM(CASE WHEN {$isGastoSql} THEN total ELSE 0 END) as total")
             ->groupBy('m')
             ->pluck('total', 'm');
 
         $meses = [];
         $ventasMes = [];
-        $comprasMes = [];
+        $gastosMes = [];
         for ($m = 1; $m <= 12; $m++) {
-            $meses[]      = date('M', mktime(0, 0, 0, $m, 1));
-            $ventasMes[]  = (float) ($ventasMesRaw[$m] ?? 0);
-            $comprasMes[] = (float) ($comprasMesRaw[$m] ?? 0);
+            $meses[]     = date('M', mktime(0, 0, 0, $m, 1));
+            $ventasMes[] = (float) ($ventasMesRaw[$m] ?? 0);
+            $gastosMes[] = (float) ($gastosMesRaw[$m] ?? 0);
         }
 
         // ==========================
-        // Utilidad en el rango
-        // ==========================
-        $ventasTotalRango  = (float) Venta::where('estado', 'Activo')
-            ->whereBetween('fecha', [$desde, $hasta])
-            ->sum('total');
-
-        $comprasTotalRango = (float) Compra::where('estado', 'Activo')
-            ->whereBetween('fecha', [$desde, $hasta])
-            ->sum('total');
-
-        $utilidad = $ventasTotalRango - $comprasTotalRango;
-
-        // ==========================
-        // Ventas por usuario (rango)
+        // VENTAS POR USUARIO (rango) - SOLO VENTAS (no gastos)
         // ==========================
         $ventasPorUsuario = Venta::where('estado', 'Activo')
             ->whereBetween('fecha', [$desde, $hasta])
+            ->whereRaw($isVentaSql)
             ->join('users', 'users.id', '=', 'ventas.user_id')
             ->selectRaw("users.name as usuario, SUM(ventas.total) as total")
             ->groupBy('users.name')
@@ -114,26 +110,26 @@ class DashboardController extends Controller
             ->get();
 
         $usuarios = $ventasPorUsuario->pluck('usuario');
-        $ventasUsuarios = $ventasPorUsuario->pluck('total');
+        $ventasUsuarios = $ventasPorUsuario->pluck('total')->map(fn($v) => (float)$v);
 
         return response()->json([
-            'ventas' => $ventas,
+            'movimientos' => $movimientos,
 
-            'totales' => [
-                'internado' => (float) ($totales->internado ?? 0),
-                'externo'   => (float) ($totales->externo ?? 0),
+            'kpis' => [
+                'ventas'   => $ventasTotal,
+                'gastos'   => $gastosTotal,
+                'ganancia' => (float) $ganancia,
             ],
 
-            'utilidad' => (float) $utilidad,
-
-            // bar: ventas diarias
+            // bar: diario (2 series)
             'dias'          => $dias,
             'ventasDiarias' => $ventasDiarias,
+            'gastosDiarios' => $gastosDiarios,
 
-            // line: compras vs ventas (año)
-            'meses'      => $meses,
-            'ventasMes'  => $ventasMes,
-            'comprasMes' => $comprasMes,
+            // line: mensual (año)
+            'meses'     => $meses,
+            'ventasMes' => $ventasMes,
+            'gastosMes' => $gastosMes,
 
             // bar: ventas por usuario (rango)
             'usuarios'       => $usuarios,

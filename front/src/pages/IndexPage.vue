@@ -4,8 +4,8 @@
     <q-card class="q-pa-md q-mb-md shadow-1" bordered>
       <div class="row items-center q-col-gutter-md">
         <div class="col-12 col-md">
-          <div class="text-h6 text-weight-bold">Dashboard </div>
-          <div class="text-caption text-grey-7">Resumen de ventas, compras y rendimiento por usuario</div>
+          <div class="text-h6 text-weight-bold">Dashboard</div>
+          <div class="text-caption text-grey-7">Resumen de ventas y gastos</div>
         </div>
 
         <div class="col-12 col-md-7">
@@ -44,49 +44,37 @@
 
     <!-- KPIs -->
     <div class="row q-col-gutter-md q-mb-md">
-      <div class="col-12 col-md-3">
-        <q-card class="kpi kpi-blue text-white shadow-2">
-          <q-card-section class="row items-center">
-            <q-icon name="local_hospital" size="28px" class="q-mr-sm" />
-            <div>
-              <div class="text-subtitle2">Ventas Internado</div>
-              <div class="text-h5 text-weight-bold">{{ fmt(totalInternado) }} Bs</div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <div class="col-12 col-md-3">
-        <q-card class="kpi kpi-orange text-white shadow-2">
-          <q-card-section class="row items-center">
-            <q-icon name="public" size="28px" class="q-mr-sm" />
-            <div>
-              <div class="text-subtitle2">Ventas Externo</div>
-              <div class="text-h5 text-weight-bold">{{ fmt(totalExterno) }} Bs</div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-4">
         <q-card class="kpi kpi-green text-white shadow-2">
           <q-card-section class="row items-center">
             <q-icon name="attach_money" size="28px" class="q-mr-sm" />
             <div>
-              <div class="text-subtitle2">Total Ventas</div>
-              <div class="text-h5 text-weight-bold">{{ fmt(totalGeneral) }} Bs</div>
+              <div class="text-subtitle2">Ventas</div>
+              <div class="text-h5 text-weight-bold">{{ fmt(k.ventas) }} Bs</div>
             </div>
           </q-card-section>
         </q-card>
       </div>
 
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-4">
+        <q-card class="kpi kpi-red text-white shadow-2">
+          <q-card-section class="row items-center">
+            <q-icon name="money_off" size="28px" class="q-mr-sm" />
+            <div>
+              <div class="text-subtitle2">Gastos</div>
+              <div class="text-h5 text-weight-bold">{{ fmt(k.gastos) }} Bs</div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-12 col-md-4">
         <q-card class="kpi kpi-teal text-white shadow-2">
           <q-card-section class="row items-center">
             <q-icon name="trending_up" size="28px" class="q-mr-sm" />
             <div>
-              <div class="text-subtitle2">Utilidad (Ventas - Compras)</div>
-              <div class="text-h5 text-weight-bold">{{ fmt(utilidad) }} Bs</div>
+              <div class="text-subtitle2">Ganancia (Ventas - Gastos)</div>
+              <div class="text-h5 text-weight-bold">{{ fmt(k.ganancia) }} Bs</div>
             </div>
           </q-card-section>
         </q-card>
@@ -95,13 +83,13 @@
 
     <!-- Charts -->
     <div class="row q-col-gutter-md">
-      <!-- Ventas diarias -->
+      <!-- Movimientos diarios -->
       <div class="col-12 col-md-6">
         <q-card class="shadow-2">
           <q-card-section class="row items-center justify-between">
             <div>
-              <div class="text-subtitle2 text-grey-8">Ventas diarias</div>
-              <div class="text-caption text-grey-7">Suma total por día</div>
+              <div class="text-subtitle2 text-grey-8">Movimientos diarios</div>
+              <div class="text-caption text-grey-7">Ventas y gastos por día</div>
             </div>
           </q-card-section>
 
@@ -121,12 +109,12 @@
         </q-card>
       </div>
 
-      <!-- Compras vs Ventas -->
+      <!-- Ventas vs Gastos (mensual) -->
       <div class="col-12 col-md-6">
         <q-card class="shadow-2">
           <q-card-section class="row items-center justify-between">
             <div>
-              <div class="text-subtitle2 text-grey-8">Compras vs Ventas</div>
+              <div class="text-subtitle2 text-grey-8">Ventas vs Gastos</div>
               <div class="text-caption text-grey-7">Serie mensual del año actual</div>
             </div>
           </q-card-section>
@@ -153,7 +141,7 @@
           <q-card-section class="row items-center justify-between">
             <div>
               <div class="text-subtitle2 text-grey-8">Ventas por usuario</div>
-              <div class="text-caption text-grey-7">Top usuarios por total vendido (rango seleccionado)</div>
+              <div class="text-caption text-grey-7">Top usuarios por total vendido (solo ventas)</div>
             </div>
           </q-card-section>
 
@@ -173,11 +161,11 @@
         </q-card>
       </div>
 
-      <!-- Últimas ventas -->
+      <!-- Últimos movimientos -->
       <div class="col-12">
         <q-card class="shadow-2">
           <q-card-section class="row items-center justify-between">
-            <div class="text-subtitle1 text-weight-bold text-grey-8">Últimas Ventas</div>
+            <div class="text-subtitle1 text-weight-bold text-grey-8">Últimos movimientos</div>
             <div class="text-caption text-grey-7">{{ rangoLegible }}</div>
           </q-card-section>
 
@@ -189,8 +177,7 @@
               <tr class="bg-primary text-white">
                 <th>ID</th>
                 <th>Fecha</th>
-                <th>Cliente</th>
-                <th>Doctor</th>
+                <th>Cliente / Concepto</th>
                 <th>Usuario</th>
                 <th>Total</th>
                 <th>Tipo</th>
@@ -199,33 +186,34 @@
 
               <tbody>
               <tr v-if="loading">
-                <td colspan="7" class="q-pa-md">
+                <td colspan="6" class="q-pa-md">
                   <q-skeleton type="text" width="100%" height="26px" />
                   <q-skeleton type="text" width="100%" height="26px" />
                   <q-skeleton type="text" width="100%" height="26px" />
                 </td>
               </tr>
 
-              <tr v-for="v in ventas" :key="v.id">
+              <tr v-for="v in movimientos" :key="v.id">
                 <td>{{ v.id }}</td>
-                <td>{{ v.fecha }}</td>
-                <td>{{ v.nombre }}</td>
-                <td>{{ v.doctor ? (v.doctor?.nombre || '-') : '-' }}</td>
-                <td>{{ v.user ? (v.user?.name || '-') : '-' }}</td>
-                <td class="text-weight-bold">{{ fmt(v.total) }} Bs</td>
+                <td>{{ v.fecha }} {{ v.hora }}</td>
                 <td>
-                  <q-chip
-                    :color="(v.tipo_venta === 'Internado' || v.tipo_venta === 'Interno') ? 'indigo' : 'orange'"
-                    text-color="white"
-                    dense
-                  >
-                    {{ (v.tipo_venta === 'Interno') ? 'Internado' : v.tipo_venta }}
+                  {{ esGasto(v) ? (v.nombre || 'Gasto') : (v.nombre || 'SN') }}
+                </td>
+                <td>{{ v.user?.name || '-' }}</td>
+                <td class="text-weight-bold">
+                  <span v-if="esGasto(v)" class="text-negative">- {{ fmt(v.total) }}</span>
+                  <span v-else>{{ fmt(v.total) }}</span>
+                  Bs
+                </td>
+                <td>
+                  <q-chip :color="esGasto(v) ? 'negative' : 'positive'" text-color="white" dense>
+                    {{ esGasto(v) ? 'Gasto' : 'Venta' }}
                   </q-chip>
                 </td>
               </tr>
 
-              <tr v-if="!loading && ventas.length === 0">
-                <td colspan="7" class="text-center text-grey q-pa-md">Sin ventas en el rango seleccionado</td>
+              <tr v-if="!loading && movimientos.length === 0">
+                <td colspan="6" class="text-center text-grey q-pa-md">Sin movimientos en el rango seleccionado</td>
               </tr>
               </tbody>
             </q-markup-table>
@@ -256,13 +244,15 @@ export default {
         hasta: `${y}-${m}-${d}`
       },
 
-      ventas: [],
-      totalInternado: 0,
-      totalExterno: 0,
-      utilidad: 0,
+      // data
+      movimientos: [],
+      k: { ventas: 0, gastos: 0, ganancia: 0 },
 
-      // Ventas diarias
-      chartSeries: [{ name: 'Ventas', data: [] }],
+      // bar diario (2 series)
+      chartSeries: [
+        { name: 'Ventas', data: [] },
+        { name: 'Gastos', data: [] },
+      ],
       chartOptions: {
         chart: { toolbar: { show: false } },
         xaxis: { categories: [] },
@@ -273,10 +263,10 @@ export default {
         noData: { text: 'Sin datos' }
       },
 
-      // Compras vs Ventas
+      // line mensual
       chartLineSeries: [
         { name: 'Ventas', data: [] },
-        { name: 'Compras', data: [] }
+        { name: 'Gastos', data: [] }
       ],
       chartLineOptions: {
         chart: { toolbar: { show: false } },
@@ -289,7 +279,7 @@ export default {
         noData: { text: 'Sin datos' }
       },
 
-      // Ventas por usuario
+      // ventas por usuario
       chartUserSeries: [{ name: 'Ventas', data: [] }],
       chartUserOptions: {
         chart: { toolbar: { show: false } },
@@ -305,9 +295,6 @@ export default {
   },
 
   computed: {
-    totalGeneral () {
-      return Number(this.totalInternado) + Number(this.totalExterno)
-    },
     rangoLegible () {
       return `${this.f.desde} → ${this.f.hasta}`
     }
@@ -320,6 +307,10 @@ export default {
   methods: {
     fmt (n) {
       return Number(n || 0).toFixed(2)
+    },
+
+    esGasto (v) {
+      return String(v?.tipo_comprobante || '').toLowerCase() === 'gastos'
     },
 
     preset (tipo) {
@@ -361,31 +352,34 @@ export default {
         })
 
         // KPIs
-        this.totalInternado = data.totales?.internado || 0
-        this.totalExterno   = data.totales?.externo || 0
-        this.utilidad       = data.utilidad || 0
+        this.k.ventas = data.kpis?.ventas || 0
+        this.k.gastos = data.kpis?.gastos || 0
+        this.k.ganancia = data.kpis?.ganancia || 0
 
         // tabla
-        this.ventas = data.ventas || []
+        this.movimientos = data.movimientos || []
 
-        // charts: ventas diarias
+        // bar diario
         this.chartOptions = {
           ...this.chartOptions,
           xaxis: { ...this.chartOptions.xaxis, categories: data.dias || [] }
         }
-        this.chartSeries = [{ name: 'Ventas', data: data.ventasDiarias || [] }]
+        this.chartSeries = [
+          { name: 'Ventas', data: data.ventasDiarias || [] },
+          { name: 'Gastos', data: data.gastosDiarios || [] }
+        ]
 
-        // charts: compras vs ventas
+        // line mensual
         this.chartLineOptions = {
           ...this.chartLineOptions,
           xaxis: { ...this.chartLineOptions.xaxis, categories: data.meses || [] }
         }
         this.chartLineSeries = [
           { name: 'Ventas', data: data.ventasMes || [] },
-          { name: 'Compras', data: data.comprasMes || [] }
+          { name: 'Gastos', data: data.gastosMes || [] }
         ]
 
-        // charts: ventas por usuario
+        // ventas por usuario
         this.chartUserOptions = {
           ...this.chartUserOptions,
           xaxis: { ...this.chartUserOptions.xaxis, categories: data.usuarios || [] }
@@ -403,8 +397,7 @@ export default {
 
 <style scoped>
 .kpi { border-radius: 18px; }
-.kpi-blue   { background: linear-gradient(135deg, #3f51b5, #283593); }
-.kpi-orange { background: linear-gradient(135deg, #fb8c00, #ef6c00); }
-.kpi-green  { background: linear-gradient(135deg, #43a047, #2e7d32); }
-.kpi-teal   { background: linear-gradient(135deg, #00897b, #00695c); }
+.kpi-green { background: linear-gradient(135deg, #43a047, #2e7d32); }
+.kpi-red   { background: linear-gradient(135deg, #e53935, #b71c1c); }
+.kpi-teal  { background: linear-gradient(135deg, #00897b, #00695c); }
 </style>
