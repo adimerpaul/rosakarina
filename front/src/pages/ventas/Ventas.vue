@@ -19,7 +19,7 @@
 <!--                        : acc-->
 <!--                    }, 0)-->
 <!--                  }}-->
-                  {{ totalInternos + totalExternos }}
+                  {{ totalVentas - totalGastos }}
                   Bs</q-item-label>
               </q-item-section>
             </q-item>
