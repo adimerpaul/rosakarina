@@ -121,19 +121,50 @@
         </q-card-section>
         <q-card-section class="q-pt-none">
           <q-form @submit="producto.id ? productoPut() : productoPost()">
-            <q-input v-model="producto.nombre" label="Nombre" dense outlined :rules="[val => !!val || 'Campo requerido']" />
-            <q-input v-model="producto.descripcion" label="Descripción" dense outlined hint="" />
-            <q-input v-model="producto.unidad" label="Unidad" dense outlined hint="" />
-            <q-input v-model="producto.precio" label="Precio" dense outlined hint="" type="number" step="0.01" />
-            <q-input v-model="producto.stock" label="Stock" dense outlined hint="" />
-            <q-input v-model="producto.stock_minimo" label="Stock mínimo" dense outlined hint="" />
-            <q-input v-model="producto.stock_maximo" label="Stock máximo" dense outlined hint="" />
-            <div class="text-right" >
-              <q-btn color="negative" label="Cancelar" @click="productoDialog = false" no-caps :loading="loading" />
-              <q-btn color="primary" label="Guardar" type="submit" no-caps :loading="loading" class="q-ml-sm" />
+
+            <!-- CAMPOS EXISTENTES -->
+            <q-input v-model="producto.nombre" label="Nombre" dense outlined />
+            <q-input v-model="producto.descripcion" label="Descripción" dense outlined />
+            <q-input v-model="producto.unidad" label="Unidad" dense outlined />
+            <q-input v-model="producto.precio" label="Precio" dense outlined type="number" />
+            <q-input v-model="producto.stock" label="Stock" dense outlined />
+
+            <!-- FOTO -->
+            <div class="q-mt-sm">
+              <q-btn
+                label="Seleccionar foto"
+                icon="photo"
+                color="primary"
+                no-caps
+                dense
+                @click="$refs.fotoInput.click()"
+              />
+              <input
+                type="file"
+                ref="fotoInput"
+                accept="image/*"
+                style="display:none"
+                @change="onFotoChange"
+              />
             </div>
+
+            <!-- PREVIEW -->
+            <div v-if="fotoPreview" class="q-mt-sm">
+              <q-img
+                :src="fotoPreview"
+                style="width: 120px; height: 120px"
+                spinner-color="primary"
+              />
+            </div>
+
+            <div class="text-right q-mt-md">
+              <q-btn label="Cancelar" color="negative" flat @click="productoDialog = false" />
+              <q-btn label="Guardar" color="primary" type="submit" no-caps />
+            </div>
+
           </q-form>
         </q-card-section>
+
       </q-card>
     </q-dialog>
     <q-dialog v-model="historialDialog" persistent>
@@ -149,6 +180,7 @@
             <tr>
               <th>#</th>
               <th>Fecha</th>
+              <th>Proveedor</th>
               <th>Lote</th>
               <th>Vencimiento</th>
               <th>Cantidad</th>
@@ -161,6 +193,9 @@
               <td>{{ i + 1 }}</td>
               <td>{{ item.compra?.fecha }}</td>
               <td>{{ item.lote }}</td>
+              <td>
+                {{ item.proveedor?.nombre }}
+              </td>
               <td>{{ item.fecha_vencimiento }}</td>
               <td>{{ item.cantidad }}</td>
               <td>{{ item.precio }}</td>
@@ -211,6 +246,8 @@ export default {
     return {
       productos: [],
       producto: {},
+      productoFoto: null,     // 👈 archivo
+      fotoPreview: null,      // 👈 preview
       productoDialog: false,
       loading: false,
       actionPeriodo: '',
@@ -241,6 +278,13 @@ export default {
     this.debouncedCambioStock = debounce(this.cambioStock, 500)
   },
   methods: {
+    onFotoChange(e) {
+      const file = e.target.files[0]
+      if (!file) return
+
+      this.productoFoto = file
+      this.fotoPreview = URL.createObjectURL(file)
+    },
     onFileChange(event) {
       const file = event.target.files[0]
       if (file) {
@@ -324,15 +368,9 @@ export default {
       })
     },
     productoNew() {
-      this.producto = {
-        name: '',
-        email: '',
-        password: '',
-        area_id: 1,
-        productoname: '',
-        cargo: '',
-        role: 'Area',
-      }
+      this.producto = {}
+      this.productoFoto = null
+      this.fotoPreview = null
       this.actionPeriodo = 'Nuevo'
       this.productoDialog = true
     },
@@ -365,16 +403,29 @@ export default {
     },
     productoPost() {
       this.loading = true
-      this.$axios.post('productos', this.producto).then(res => {
+
+      const formData = new FormData()
+      Object.keys(this.producto).forEach(key => {
+        formData.append(key, this.producto[key])
+      })
+
+      if (this.productoFoto) {
+        formData.append('foto', this.productoFoto)
+      }
+
+      this.$axios.post('productos', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }).then(() => {
         this.productosGet()
         this.productoDialog = false
-        this.$alert.success('Periodo creado')
-      }).catch(error => {
-        this.$alert.error(error.response.data.message)
+        this.$alert.success('Producto creado')
+      }).catch(err => {
+        this.$alert.error(err.response?.data?.message || 'Error')
       }).finally(() => {
         this.loading = false
       })
     },
+
     productoPut() {
       this.loading = true
       this.$axios.put('productos/' + this.producto.id, this.producto).then(res => {

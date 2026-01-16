@@ -45,7 +45,12 @@
                 </q-list>
               </q-menu>
             </q-btn>
-            <q-btn no-caps icon="o_account_circle" dense :label="$store.user.name">
+            <q-btn no-caps dense :label="$store.user.name">
+<!--              <template icon-->
+              <div style="display: flex; align-items: center;padding-left: 10px">
+                <img :src="`${$url}../avatares/${$store.user.avatar || 'default.png'}`" class="q-mr-sm" style="width:24px; height:24px; border-radius:50%" />
+              </div>
+<!--              <template afater emplate-->
               <q-menu>
                 <q-list>
                   <q-item clickable>
@@ -88,7 +93,9 @@
       <q-list dense>
         <q-item dense>
           <q-item-section avatar>
-            <q-icon name="account_circle" />
+<!--            <q-icon name="account_circle" />-->
+<!--            <img :src="`${$url}../avatares/${props.row.avatar || 'default.png'}`">-->
+            <img :src="`${$url}../avatares/${$store.user.avatar || 'default.png'}`" class="q-mr-sm" style="width:40px; height:40px; border-radius:50%" />
           </q-item-section>
           <q-item-section>
 <!--            <pre>-->

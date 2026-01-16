@@ -47,6 +47,7 @@
             <th>#</th>
             <th>Producto</th>
             <th>Cantidad</th>
+            <th>Factura</th>
             <th>Lote</th>
             <th>Proveedor</th>
             <th>Fecha de Vencimiento</th>
@@ -59,6 +60,9 @@
             <td>{{ i + 1 }}</td>
             <td>{{ p.producto?.nombre }}</td>
             <td>{{ p.cantidad_venta }}</td>
+            <td>
+              {{p.compra.nro_factura}}
+            </td>
             <td>{{ p.lote }}</td>
             <td>{{ p.proveedor?.nombre }}</td>
             <td>{{ p.fecha_vencimiento }}</td>

@@ -48,8 +48,23 @@
                     <q-item-label>Permisos</q-item-label>
                   </q-item-section>
                 </q-item>
+                <q-item clickable @click="userChangeAvatar(props.row)" v-close-popup>
+                  <q-item-section avatar>
+                    <q-icon name="photo_camera" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label>Cambiar foto</q-item-label>
+                  </q-item-section>
+                </q-item>
               </q-list>
           </q-btn-dropdown>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-avatar="props">
+        <q-td :props="props" align="center">
+          <q-avatar size="40px">
+            <img :src="`${$url}../avatares/${props.row.avatar || 'default.png'}`">
+          </q-avatar>
         </q-td>
       </template>
       <template v-slot:body-cell-role="props">
@@ -132,6 +147,29 @@
             <q-input v-model="user.email" label="Email" dense outlined hint="" />
             <q-input v-model="user.password" label="Contraseña" dense outlined :rules="[val => !!val || 'Campo requerido']" v-if="!user.id" />
             <q-select v-model="user.role" label="Rol" dense outlined :options="roles" :rules="[val => !!val || 'Campo requerido']" />
+            <div class="q-mt-sm">
+              <q-btn
+                label="Seleccionar foto"
+                icon="photo"
+                color="primary"
+                dense
+                no-caps
+                @click="$refs.avatarInput.click()"
+              />
+              <input
+                type="file"
+                ref="avatarInput"
+                accept="image/*"
+                style="display:none"
+                @change="onAvatarChange"
+              />
+            </div>
+
+            <div v-if="avatarPreview" class="q-mt-sm">
+              <q-avatar size="80px">
+                <img :src="avatarPreview">
+              </q-avatar>
+            </div>
             <div class="text-right" >
               <q-btn color="negative" label="Cancelar" @click="userDialog = false" no-caps :loading="loading" />
               <q-btn color="primary" label="Guardar" type="submit" no-caps :loading="loading" class="q-ml-sm" />
@@ -140,6 +178,53 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="dialogAvatar">
+      <q-card style="width: 400px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-bold">Cambiar foto de {{ user.name }}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense @click="dialogAvatar = false" />
+        </q-card-section>
+
+        <q-card-section>
+          <div class="flex flex-center q-mb-md">
+            <q-avatar size="120px">
+              <img :src="avatarPreview || `${$url}../avatares/${user.avatar || 'default.png'}`">
+            </q-avatar>
+          </div>
+
+          <div class="flex flex-center">
+            <q-btn
+              label="Seleccionar foto"
+              icon="photo"
+              color="primary"
+              no-caps
+              dense
+              @click="$refs.avatarDialogInput.click()"
+            />
+            <input
+              type="file"
+              ref="avatarDialogInput"
+              accept="image/*"
+              style="display:none"
+              @change="onAvatarChange"
+            />
+          </div>
+        </q-card-section>
+
+        <q-card-section class="text-right">
+          <q-btn label="Cancelar" flat @click="dialogAvatar = false" />
+          <q-btn
+            label="Guardar"
+            color="primary"
+            :loading="loading"
+            no-caps
+            @click="guardarAvatar"
+          />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
     <q-dialog v-model="dialogPermisos">
       <q-card>
         <q-card-section class="q-pb-none row items-center">
@@ -179,6 +264,9 @@ export default {
     return {
       users: [],
       user: {},
+      avatarFile: null,
+      avatarPreview: null,
+      dialogAvatar: false,
       userDialog: false,
       loading: false,
       actionPeriodo: '',
@@ -190,7 +278,12 @@ export default {
         { name: 'name', label: 'Nombre', align: 'left', field: 'name' },
         { name: 'username', label: 'Usuario', align: 'left', field: 'username' },
         { name: 'role', label: 'Rol', align: 'left', field: 'role' },
-        { name: 'permisos', label: 'Permisos', align: 'left', field: 'permisos' }
+        { name: 'permisos', label: 'Permisos', align: 'left', field: 'permisos' },
+        { name: 'avatar', label: 'Foto', align: 'center' },
+        // { name: 'name', label: 'Nombre', align: 'left' },
+        // { name: 'username', label: 'Usuario', align: 'left' },
+        // { name: 'role', label: 'Rol', align: 'left' },
+        // { name: 'permisos', label: 'Permisos', align: 'left' },
       ],
       permisos: [],
       dialogPermisos: false,
@@ -201,6 +294,40 @@ export default {
     this.permisosGet()
   },
   methods: {
+    userChangeAvatar(user) {
+      this.user = { ...user }
+      this.avatarFile = null
+      this.avatarPreview = null
+      this.dialogAvatar = true
+    },
+    guardarAvatar() {
+      if (!this.avatarFile) {
+        this.dialogAvatar = false
+        return
+      }
+
+      this.loading = true
+
+      const formData = new FormData()
+      formData.append('avatar', this.avatarFile)
+
+      this.$axios.post(`users/${this.user.id}?_method=PUT`, formData)
+        .then(() => {
+          this.$alert.success('Foto actualizada')
+          this.usersGet()
+          this.dialogAvatar = false
+        })
+        .finally(() => {
+          this.loading = false
+        })
+    },
+    onAvatarChange(e) {
+      const file = e.target.files[0]
+      if (!file) return
+
+      this.avatarFile = file
+      this.avatarPreview = URL.createObjectURL(file)
+    },
     guardarPermisos() {
       this.loading = true
       this.$axios.put(`users/${this.user.id}/permisos`, {
@@ -236,13 +363,13 @@ export default {
     userNew() {
       this.user = {
         name: '',
+        username: '',
         email: '',
         password: '',
-        area_id: 1,
-        username: '',
-        cargo: '',
-        role: 'Area',
+        role: 'Vendedor'
       }
+      this.avatarFile = null
+      this.avatarPreview = null
       this.actionPeriodo = 'Nuevo'
       this.userDialog = true
     },
@@ -268,27 +395,47 @@ export default {
     },
     userPost() {
       this.loading = true
-      this.$axios.post('users', this.user).then(res => {
+
+      const formData = new FormData()
+      Object.keys(this.user).forEach(key => {
+        formData.append(key, this.user[key])
+      })
+
+      if (this.avatarFile) {
+        formData.append('avatar', this.avatarFile)
+      }
+
+      this.$axios.post('users', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }).then(() => {
         this.usersGet()
         this.userDialog = false
-        this.$alert.success('Periodo creado')
-      }).catch(error => {
-        this.$alert.error(error.response.data.message)
+        this.$alert.success('Usuario creado')
       }).finally(() => {
         this.loading = false
       })
     },
     userPut() {
       this.loading = true
-      this.$axios.put('users/' + this.user.id, this.user).then(res => {
-        this.usersGet()
-        this.userDialog = false
-        this.$alert.success('Periodo actualizado')
-      }).catch(error => {
-        this.$alert.error(error.response.data.message)
-      }).finally(() => {
-        this.loading = false
+
+      const formData = new FormData()
+      Object.keys(this.user).forEach(key => {
+        formData.append(key, this.user[key])
       })
+
+      if (this.avatarFile) {
+        formData.append('avatar', this.avatarFile)
+      }
+
+      this.$axios.post(`users/${this.user.id}?_method=PUT`, formData)
+        .then(() => {
+          this.usersGet()
+          this.userDialog = false
+          this.$alert.success('Usuario actualizado')
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     dialogPermisosClick(user) {
       this.dialogPermisos = true
