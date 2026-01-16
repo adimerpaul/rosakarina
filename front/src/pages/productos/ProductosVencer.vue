@@ -8,7 +8,7 @@
           <div class="col-12 col-md-2">
             <q-input v-model.number="valor" type="number" min="1" label="Cantidad" dense outlined />
           </div>
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-4">
             <q-option-group
               v-model="unidad"
               :options="[
@@ -20,6 +20,20 @@
               type="radio"
               inline
               dense
+            />
+          </div>
+          <div class="col-12 col-md-3">
+            <q-select
+              v-model="proveedor_id"
+              :options="proveedores"
+              option-label="nombre"
+              option-value="id"
+              emit-value
+              map-options
+              dense
+              outlined
+              clearable
+              label="Proveedor (opcional)"
             />
           </div>
           <div class="col-12 col-md-2">
@@ -34,6 +48,7 @@
             <th>Producto</th>
             <th>Cantidad</th>
             <th>Lote</th>
+            <th>Proveedor</th>
             <th>Fecha de Vencimiento</th>
             <th>Estado</th>
             <th>Días restantes</th>
@@ -45,6 +60,7 @@
             <td>{{ p.producto?.nombre }}</td>
             <td>{{ p.cantidad_venta }}</td>
             <td>{{ p.lote }}</td>
+            <td>{{ p.proveedor?.nombre }}</td>
             <td>{{ p.fecha_vencimiento }}</td>
             <td>
               <q-badge :color="p.estado === 'Activo' ? 'green' : 'red'" class="q-pa-xs">
@@ -70,29 +86,43 @@ export default {
   data() {
     return {
       valor: 1,
-      unidad: 'meses', // o 'semanas', 'meses'
+      unidad: 'meses',
       dias: 1,
       productos: [],
+      proveedores: [],
+      proveedor_id: null, // 👈 NUEVO
       loading: false
     };
   },
   mounted() {
+    this.cargarProveedores();
     this.consultar();
   },
   methods: {
+    cargarProveedores() {
+      this.$axios.get('/proveedores').then(res => {
+        this.proveedores = res.data;
+      });
+    },
     consultar() {
       this.dias = this.convertirADias(this.valor, this.unidad);
 
       this.loading = true;
-      this.$axios.get('/productosPorVencer', { params: { dias: this.dias } })
+      this.$axios.get('/productosPorVencer', {
+        params: {
+          dias: this.dias,
+          proveedor_id: this.proveedor_id // 👈 NUEVO
+        }
+      })
         .then(res => {
-          this.productos = res.data
+          this.productos = res.data;
         })
         .catch(() => {
           this.$alert.error("Error al consultar productos por vencer");
-        }).finally(() => {
-        this.loading = false;
-      });
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     convertirADias(valor, unidad) {
       switch (unidad) {
