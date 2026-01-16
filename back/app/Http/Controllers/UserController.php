@@ -85,11 +85,26 @@ class UserController extends Controller{
             ->with('permissions')
             ->get();
     }
-    function update(Request $request, $id){
-        $user = User::find($id);
-        $user->update($request->except('password'));
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $user->update($request->except(['password', 'avatar']));
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $fileName = time() . '.' . $file->getClientOriginalExtension();
+            $path = public_path('avatares');
+
+            $file->move($path, $fileName);
+
+            $user->avatar = $fileName;
+            $user->save();
+        }
+
         return $user;
     }
+
     function updatePassword(Request $request, $id){
         $user = User::find($id);
         $user->update([
@@ -97,16 +112,34 @@ class UserController extends Controller{
         ]);
         return $user;
     }
-    function store(Request $request){
-        $validatedData = $request->validate([
+    public function store(Request $request)
+    {
+        $request->validate([
             'username' => 'required|unique:users',
             'password' => 'required',
             'name' => 'required',
-//            'email' => 'required|email|unique:users',
         ]);
-        $user = User::create($request->all());
+
+        $data = $request->except('avatar');
+
+        $data['password'] = bcrypt($request->password);
+
+        $user = User::create($data);
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $fileName = time() . '.' . $file->getClientOriginalExtension();
+            $path = public_path('avatares');
+
+            $file->move($path, $fileName);
+
+            $user->avatar = $fileName;
+            $user->save();
+        }
+
         return $user;
     }
+
     function destroy($id){
         return User::destroy($id);
     }

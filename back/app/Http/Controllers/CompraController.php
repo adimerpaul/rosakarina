@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class CompraController extends Controller{
     function historialCompras($id){
-        $historial = \App\Models\CompraDetalle::with('compra')
+        $historial = \App\Models\CompraDetalle::with('compra','proveedor')
             ->where('producto_id', $id)
             ->orderByDesc('fecha_vencimiento')
             ->get();
@@ -27,7 +27,7 @@ class CompraController extends Controller{
         $hoy = Carbon::now();
         $limite = $hoy->copy()->addDays($dias);
 
-        $productos = CompraDetalle::with(['producto', 'proveedor'])
+        $productos = CompraDetalle::with(['producto', 'proveedor', 'compra'])
             ->whereNotNull('fecha_vencimiento')
             ->whereBetween('fecha_vencimiento', [
                 $hoy->format('Y-m-d'),

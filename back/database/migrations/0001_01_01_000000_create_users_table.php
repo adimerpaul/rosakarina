@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('username')->unique();
             $table->string('email')->nullable();
+            $table->string('avatar')->default('default.png');
             $table->string('role')->default('Vendedor');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

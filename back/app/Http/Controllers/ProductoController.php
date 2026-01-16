@@ -120,8 +120,27 @@ class ProductoController extends Controller{
         $producto->imagen = $fileName;
         $producto->save();
     }
-    function store(Request $request){
-        return Producto::create($request->all());
+    public function store(Request $request)
+    {
+        $producto = Producto::create($request->except('foto'));
+
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $fileName = time() . '.' . $file->getClientOriginalExtension();
+            $filePath = public_path('/images');
+
+            $file->move($filePath, $fileName);
+
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($filePath . '/' . $fileName);
+            $image->scale(width: 300);
+            $image->toPng()->save($filePath . '/' . $fileName);
+
+            $producto->imagen = $fileName;
+            $producto->save();
+        }
+
+        return response()->json($producto);
     }
     function update(Request $request, Producto $producto){
         $producto->update($request->all());
