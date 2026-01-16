@@ -127,14 +127,14 @@ class CompraController extends Controller{
                     'producto_id' => $p['producto_id'],
                     'proveedor_id' => $compra->proveedor_id,
                     'nombre' => $p['producto']['nombre'],
-                    'precio' => $p['precio'],
+                    'precio' => $p['precio'] ?? 0,
                     'cantidad' => $p['cantidad'],
                     'cantidad_venta' => $p['cantidad'],
                     'factor' => $p['factor'],
                     'total' => $p['precio'] * $p['cantidad'],
-                    'precio13' => $p['precio'] * 1.3,
-                    'total13' => $p['precio'] * $p['cantidad'] * 1.3,
-                    'precio_venta' => $p['precio_venta'],
+                    'precio13' => $p['precio'] ?? 0 * 1.3,
+                    'total13' => $p['precio'] ?? 0 * $p['cantidad'] * 1.3,
+                    'precio_venta' => $p['precio_venta'] ?? 0,
                     'estado' => 'Activo',
                     'lote' => $p['lote'],
                     'fecha_vencimiento' => $p['fecha_vencimiento'],
@@ -143,9 +143,12 @@ class CompraController extends Controller{
 
                 // Actualizar el stock del producto
 //                Producto::where('id', $p['producto_id'])->increment('stock', $p['cantidad']);
-                $producto = Producto::find($p['producto_id']);
-                $producto->precio = $p['precio_venta'];
-                $producto->save();
+                if ($p['precio_venta'] ?? 0 > 0) {
+                    Producto::where('id', $p['producto_id'])->update(['precio' => $p['precio_venta']]);
+                }
+//                $producto = Producto::find($p['producto_id']);
+//                $producto->precio = $p['precio_venta'];
+//                $producto->save();
             }
 
             DB::commit();
