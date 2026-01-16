@@ -120,7 +120,7 @@
                     <input v-model.number="item.cantidad" type="number" style="width:60px;" min="1"/>
                   </td>
                   <td style="padding:0;margin:0;">
-                    <input v-model.number="item.precio" type="number" style="width:70px;" step="0.01"/>
+                    <input v-model.number="item.precio" type="number" style="width:70px;" step="0.01" :disabled="$store.user.role !== 'Administrador'"/>
                   </td>
                   <td class="text-right">
                     {{ (Number(item.cantidad) * Number(item.precio)).toFixed(2) }} Bs

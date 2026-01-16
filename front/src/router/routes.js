@@ -21,6 +21,16 @@ const routes = [
       {
         path: '/productos-precios',
         component: () => import('pages/productos/ProductosPreciosPage.vue')
+      },
+      {
+        path: '/pedidos',
+        name: 'pedidos',
+        component: () => import('pages/pedidos/Pedidos.vue')
+      },
+      {
+        path: '/pedidos/create',
+        name: 'pedidos-create',
+        component: () => import('pages/pedidos/PedidosCreate.vue')
       }
     ]
   },

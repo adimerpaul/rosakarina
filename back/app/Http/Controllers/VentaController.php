@@ -342,13 +342,18 @@ class VentaController extends Controller
     {
         $fechaInicio = $request->input('fechaInicio');
         $fechaFin    = $request->input('fechaFin');
-        $user        = $request->input('user');
+        $user_id        = $request->input('user');
 
         $q = Venta::with('user', 'cliente','ventaDetalles')
             ->when($fechaInicio && $fechaFin, fn($qq)=>$qq->whereBetween('fecha', [$fechaInicio, $fechaFin]))
             ->orderBy('created_at', 'desc');
 
-        if ($user) $q->where('user_id', $user);
+        if ($user_id) $q->where('user_id', $user_id);
+
+        $user = $request->user();
+        if (!($user->role == 'Administrador')) {
+            $q->where('user_id', $user->id);
+        }
 
         return $q->get();
     }

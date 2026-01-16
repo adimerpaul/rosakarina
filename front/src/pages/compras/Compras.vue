@@ -63,6 +63,15 @@
             <q-select v-model="user" :options="usersTodos" label="Usuario" dense outlined emit-value map-options/>
           </div>
           <div class="col-12 col-md-2">
+            <q-select
+              v-model="proveedor_id"
+              :options="proveedoresTodos"
+              label="Proveedor"
+              dense outlined
+              emit-value map-options
+            />
+          </div>
+          <div class="col-12 col-md-2">
             <q-btn color="primary" label="Buscar" icon="search" @click="comprasGet" :loading="loading" no-caps />
           </div>
 <!--           btn crear-->
@@ -136,14 +145,21 @@ export default {
       fechaFin: moment().format('YYYY-MM-DD'),
       user: '',
       users: [],
+      proveedor_id: '',
+      proveedores: [],
       loading: false
     }
   },
   mounted() {
     this.comprasGet()
     this.usersGet()
+    this.proveedoresGet()
+
   },
   computed: {
+    proveedoresTodos() {
+      return [{ label: 'Todos', value: '' }, ...this.proveedores.map(p => ({ label: p.nombre, value: p.id }))]
+    },
     usersTodos() {
       return [{ label: 'Todos', value: '' }, ...this.users.map(u => ({ label: u.name, value: u.id }))]
     },
@@ -155,6 +171,11 @@ export default {
     }
   },
   methods: {
+    proveedoresGet() {
+      this.$axios.get('proveedores').then(res => {
+        this.proveedores = res.data
+      })
+    },
     excel() {
       const data = [{
         columns: [
@@ -178,7 +199,8 @@ export default {
         params: {
           fechaInicio: this.fechaInicio,
           fechaFin: this.fechaFin,
-          user: this.user
+          user: this.user,
+          proveedor_id: this.proveedor_id
         }
       }).then(res => {
         this.compras = res.data

@@ -99,6 +99,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/productos-precios', [App\Http\Controllers\ProductoController::class, 'precios']);
     Route::post('ventasGasto', [VentaController::class, 'storeGasto']);
 
+    Route::get('/pedidos', [App\Http\Controllers\PedidoController::class, 'index']);
+    Route::get('/pedidos/{id}', [App\Http\Controllers\PedidoController::class, 'show']);
+    Route::post('/pedidos', [App\Http\Controllers\PedidoController::class, 'store']);
+    Route::put('/pedidos/{id}', [App\Http\Controllers\PedidoController::class, 'update']);
+    Route::put('/pedidosAnular/{id}', [App\Http\Controllers\PedidoController::class, 'anular']);
+    Route::delete('/pedidos/{id}', [App\Http\Controllers\PedidoController::class, 'destroy']);
+
+
 
 });
 Route::get('historial_medicos/{id}/pdf', [App\Http\Controllers\HistorialMedicoController::class, 'generatePdf']);

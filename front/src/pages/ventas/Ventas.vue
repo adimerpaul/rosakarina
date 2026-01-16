@@ -9,7 +9,9 @@
                 <q-icon name="monetization_on" size="50px" color="white" />
               </q-item-section>
               <q-item-section>
-                <q-item-label caption class="text-white">Ventas Ganancia</q-item-label>
+                <q-item-label caption class="text-white">
+                  Neto
+                </q-item-label>
                 <q-item-label class="text-white text-h4">
 <!--                  {{-->
 <!--                    ventas.reduce((acc, v) => {-->
@@ -47,6 +49,10 @@
 <!--                  }}-->
                   {{ totalVentas }}
                   Bs</q-item-label>
+              </q-item-section>
+              <q-item-section side class="text-white text-subtitle2">
+                QR: {{ totalQR }} Bs<br />
+                Efectivo: {{ totalEfectivo }} Bs
               </q-item-section>
             </q-item>
           </q-card-section>
@@ -553,6 +559,22 @@ export default {
   },
 
   computed: {
+    totalQR() {
+      return this.ventas.reduce((acc, v) => {
+        const esVenta = String(v.tipo_comprobante || '').toLowerCase() !== 'gastos'
+        return (esVenta && v.tipo_pago === 'QR' && v.estado === 'Activo')
+          ? acc + parseFloat(v.total || 0)
+          : acc
+      }, 0)
+    },
+    totalEfectivo() {
+      return this.ventas.reduce((acc, v) => {
+        const esVenta = String(v.tipo_comprobante || '').toLowerCase() !== 'gastos'
+        return (esVenta && v.tipo_pago === 'Efectivo' && v.estado === 'Activo')
+          ? acc + parseFloat(v.total || 0)
+          : acc
+      }, 0)
+    },
     totalGastos() {
       return this.ventas.reduce((acc, v) => {
         const esGasto = String(v.tipo_comprobante || '').toLowerCase() === 'gastos'

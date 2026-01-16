@@ -61,19 +61,48 @@ class CompraController extends Controller{
     }
 
 
-    public function index(Request $request){
-        $query = Compra::with(['user', 'proveedor', 'compraDetalles.producto'])->orderBy('id', 'desc');
+    public function index(Request $request)
+    {
+        $authUser = $request->user();
 
-        if ($request->fechaInicio && $request->fechaFin) {
+        $query = Compra::with(['user', 'proveedor', 'compraDetalles.producto'])
+            ->orderByDesc('fecha')
+            ->orderByDesc('id');
+
+        // ==========================
+        // FILTRO POR FECHAS
+        // ==========================
+        if ($request->filled('fechaInicio') && $request->filled('fechaFin')) {
             $query->whereBetween('fecha', [$request->fechaInicio, $request->fechaFin]);
         }
 
-        if ($request->user) {
+        // ==========================
+        // FILTRO POR USUARIO (ADMIN)
+        // ==========================
+        // En el front mandas: user: '' (todos) o user: id
+        if ($request->filled('user')) {
             $query->where('user_id', $request->user);
         }
 
-        return $query->orderByDesc('fecha')->get();
+        // ==========================
+        // FILTRO POR PROVEEDOR (NUEVO)
+        // ==========================
+        // En el front manda: proveedor_id: '' o proveedor_id: id
+        if ($request->filled('proveedor_id')) {
+            $query->where('proveedor_id', $request->proveedor_id);
+        }
+
+        // ==========================
+        // REGLA POR ROL
+        // ==========================
+        // si no es admin => solo ve sus compras (aunque manden user/proveedor)
+        if (strtolower($authUser->role ?? '') !== 'administrador') {
+            $query->where('user_id', $authUser->id);
+        }
+
+        return $query->get();
     }
+
 
     public function anular($id)
     {

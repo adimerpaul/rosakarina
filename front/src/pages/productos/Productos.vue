@@ -260,7 +260,7 @@ export default {
       columns: [
         { name: 'nombre', label: 'Nombre', align: 'left', field: 'nombre' },
         { name: 'descripcion', label: 'Descripción', align: 'left', field: 'descripcion' },
-        { name: 'unidad', label: 'Unidad', align: 'left', field: 'unidad' },
+        { name: 'unidad', label: 'Presentacion', align: 'left', field: 'unidad' },
         { name: 'precio', label: 'Precio', align: 'left', field: 'precio' },
         { name: 'stock', label: 'Stock', align: 'left', field: 'stock' },
         { name: 'stock_minimo', label: 'Stock mínimo', align: 'left', field: 'stock_minimo' },
