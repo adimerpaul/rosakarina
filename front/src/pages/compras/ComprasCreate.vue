@@ -15,6 +15,10 @@
                 <template v-slot:append>
                   <q-btn flat round dense icon="search" />
                 </template>
+<!--                template a fuera un boton de actulizar-->
+                <template v-slot:after>
+                  <q-btn flat round dense icon="refresh" @click="productosGet" />
+                </template>
               </q-input>
               <div class="flex flex-center">
                 <q-pagination
@@ -94,7 +98,7 @@
                 <tr>
                   <th class="pm-none" style="max-width: 70px;line-height: 0.9">Producto</th>
                   <th class="pm-none" style="max-width: 70px;line-height: 0.9">Cantidad</th>
-                  <th class="pm-none" style="max-width: 70px;line-height: 0.9">Precio unitario</th>
+                  <th class="pm-none" style="max-width: 70px;line-height: 0.9">Precio factura</th>
                   <th class="pm-none" style="max-width: 70px;line-height: 0.9">Total</th>
                   <th class="pm-none" style="max-width: 70px;line-height: 0.9">Factor</th>
                   <th class="pm-none" style="max-width: 70px;line-height: 0.9">Precio unitario 1.25</th>
@@ -611,11 +615,11 @@ export default {
         return;
       }
 
-      const sinPrecio = this.productosCompras.filter(p => !p.precio);
-      if (sinPrecio.length > 0) {
-        this.$alert.error("Todos los productos deben tener precio unitario");
-        return;
-      }
+      // const sinPrecio = this.productosCompras.filter(p => !p.precio);
+      // if (sinPrecio.length > 0) {
+      //   this.$alert.error("Todos los productos deben tener precio unitario");
+      //   return;
+      // }
       this.compraDialog = true;
     },
     buscarProveedor() {
@@ -659,7 +663,7 @@ export default {
         console.error("Error registrando compra:", err);
         this.$alert.error("Error al registrar la compra");
       }).finally(() => {
-        // this.loading = false;
+        this.loading = false;
       });
     },
     proveedoresGet() {
