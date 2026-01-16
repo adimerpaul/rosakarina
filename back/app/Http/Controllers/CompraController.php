@@ -19,22 +19,31 @@ class CompraController extends Controller{
 
         return response()->json($historial);
     }
-    public function productosPorVencer(Request $request){
-        $dias = (int) ($request->dias ?? 5); // Conversión explícita
+    public function productosPorVencer(Request $request)
+    {
+        $dias = (int) ($request->dias ?? 5);
+        $proveedorId = $request->proveedor_id;
 
         $hoy = Carbon::now();
         $limite = $hoy->copy()->addDays($dias);
 
-        $productos = \App\Models\CompraDetalle::with('producto')
+        $productos = CompraDetalle::with(['producto', 'proveedor'])
             ->whereNotNull('fecha_vencimiento')
-            ->whereBetween('fecha_vencimiento', [$hoy->format('Y-m-d'), $limite->format('Y-m-d')])
-            ->orderBy('fecha_vencimiento')
+            ->whereBetween('fecha_vencimiento', [
+                $hoy->format('Y-m-d'),
+                $limite->format('Y-m-d')
+            ])
             ->where('cantidad_venta', '>', 0)
             ->where('estado', 'Activo')
+            ->when($proveedorId, function ($q) use ($proveedorId) {
+                $q->where('proveedor_id', $proveedorId);
+            })
+            ->orderBy('fecha_vencimiento')
             ->get();
 
         return response()->json($productos);
     }
+
     public function productosVencidos(Request $request)
     {
         $hoy = Carbon::now()->format('Y-m-d');
