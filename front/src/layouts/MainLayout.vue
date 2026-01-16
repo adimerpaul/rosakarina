@@ -177,7 +177,7 @@ export default {
         { title: 'Compras', icon: 'shopping_cart_checkout', link: '/compras', can: 'Compras'},
         { title: 'Compras Nueva', icon: 'add_business', link: '/compras-create', can: 'Compras nuevas'},
         { title: 'Pedidos', icon: 'assignment', link: '/pedidos', can: 'Compras'},
-        { title: 'Pedidos Crear', icon: 'note_add', link: '/pedidos-create', can: 'Compras'},
+        { title: 'Pedidos Crear', icon: 'note_add', link: '/pedidos/create', can: 'Compras'},
         // {
         //   path: '/pedidos',
         //   name: 'pedidos',
