@@ -55,11 +55,14 @@
                         style="height: 120px;"
                       >
                         <div class="absolute-bottom text-center" style="padding: 0;margin: 0;">
-                          <div style="max-width: 190px;line-height: 0.9;">
+                          <div :class="{'text-red text-bold': producto.cantidad <= 5}" style="max-width: 190px;line-height: 0.9;">
                             {{ $filters.textUpper(producto.nombre) }}
                           </div>
                           <div style="display: flex;justify-content: space-between;">
-                            <span>{{ producto.cantidad }}</span>
+<!--&lt;!&ndash;                            <span>{{ producto.cantidad }}</span>&ndash;&gt; coloca un calls rojo si hay poco cantidada-->
+                            <span :class="{'text-red text-bold': producto.cantidad <= 5}">
+                              {{ producto.cantidad }}
+                            </span>
                             <span class="text-bold bg-orange text-black border">{{ producto.precio }} Bs</span>
                           </div>
                         </div>

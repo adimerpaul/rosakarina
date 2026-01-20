@@ -1,86 +1,157 @@
 <template>
   <q-page class="q-pa-xs">
     <div class="row">
-      <div class="col-12 col-md-4 q-pa-xs">
-        <q-card flat bordered>
-          <q-card-section class="q-pa-none">
-            <q-item class="bg-indigo">
-              <q-item-section avatar>
-                <q-icon name="monetization_on" size="50px" color="white" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption class="text-white">
-                  Neto
-                </q-item-label>
-                <q-item-label class="text-white text-h4">
-<!--                  {{-->
-<!--                    ventas.reduce((acc, v) => {-->
-<!--                      const esVenta = String(v.tipo_comprobante || '').toLowerCase() !== 'gastos'-->
-<!--                      return esVenta && v.estado === 'Activo'-->
-<!--                        ? acc + parseFloat(v.ganancia || 0)-->
-<!--                        : acc-->
-<!--                    }, 0)-->
-<!--                  }}-->
-                  {{ totalVentas - totalGastos }}
-                  Bs</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-card-section>
-        </q-card>
-      </div>
+<!--      <div class="col-12 col-md-4 q-pa-xs">-->
+<!--        <q-card flat bordered>-->
+<!--          <q-card-section class="q-pa-none">-->
+<!--            <q-item class="bg-indigo">-->
+<!--              <q-item-section avatar>-->
+<!--                <q-icon name="monetization_on" size="50px" color="white" />-->
+<!--              </q-item-section>-->
+<!--              <q-item-section>-->
+<!--                <q-item-label caption class="text-white">-->
+<!--                  Neto-->
+<!--                </q-item-label>-->
+<!--                <q-item-label class="text-white text-h4">-->
+<!--&lt;!&ndash;                  {{&ndash;&gt;-->
+<!--&lt;!&ndash;                    ventas.reduce((acc, v) => {&ndash;&gt;-->
+<!--&lt;!&ndash;                      const esVenta = String(v.tipo_comprobante || '').toLowerCase() !== 'gastos'&ndash;&gt;-->
+<!--&lt;!&ndash;                      return esVenta && v.estado === 'Activo'&ndash;&gt;-->
+<!--&lt;!&ndash;                        ? acc + parseFloat(v.ganancia || 0)&ndash;&gt;-->
+<!--&lt;!&ndash;                        : acc&ndash;&gt;-->
+<!--&lt;!&ndash;                    }, 0)&ndash;&gt;-->
+<!--&lt;!&ndash;                  }}&ndash;&gt;-->
+<!--                  {{ totalVentas - totalGastos }}-->
+<!--                  Bs</q-item-label>-->
+<!--              </q-item-section>-->
+<!--            </q-item>-->
+<!--          </q-card-section>-->
+<!--        </q-card>-->
+<!--      </div>-->
 
-      <div class="col-12 col-md-4 q-pa-xs">
-        <q-card flat bordered>
-          <q-card-section class="q-pa-none">
-            <q-item class="bg-green">
-              <q-item-section avatar>
-                <q-icon name="monetization_on" size="50px" color="white" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption class="text-white">Ventas</q-item-label>
-                <q-item-label class="text-white text-h4">
-<!--                  {{-->
-<!--                  ventas.reduce((acc, v) => {-->
-<!--                    const esVenta = String(v.tipo_comprobante || '').toLowerCase() !== 'gastos'-->
-<!--                    return esVenta && v.estado === 'Activo'-->
-<!--                      ? acc + parseFloat(v.total || 0)-->
-<!--                      : acc-->
-<!--                  }, 0)-->
-<!--                  }}-->
-                  {{ totalVentas }}
-                  Bs</q-item-label>
-              </q-item-section>
-              <q-item-section side class="text-white text-subtitle2">
-                QR: {{ totalQR }} Bs<br />
-                Efectivo: {{ totalEfectivo }} Bs
-              </q-item-section>
-            </q-item>
-          </q-card-section>
-        </q-card>
-      </div>
+<!--      <div class="col-12 col-md-4 q-pa-xs">-->
+<!--        <q-card flat bordered>-->
+<!--          <q-card-section class="q-pa-none">-->
+<!--            <q-item class="bg-green">-->
+<!--              <q-item-section avatar>-->
+<!--                <q-icon name="monetization_on" size="50px" color="white" />-->
+<!--              </q-item-section>-->
+<!--              <q-item-section>-->
+<!--                <q-item-label caption class="text-white">Ventas</q-item-label>-->
+<!--                <q-item-label class="text-white text-h4">-->
+<!--&lt;!&ndash;                  {{&ndash;&gt;-->
+<!--&lt;!&ndash;                  ventas.reduce((acc, v) => {&ndash;&gt;-->
+<!--&lt;!&ndash;                    const esVenta = String(v.tipo_comprobante || '').toLowerCase() !== 'gastos'&ndash;&gt;-->
+<!--&lt;!&ndash;                    return esVenta && v.estado === 'Activo'&ndash;&gt;-->
+<!--&lt;!&ndash;                      ? acc + parseFloat(v.total || 0)&ndash;&gt;-->
+<!--&lt;!&ndash;                      : acc&ndash;&gt;-->
+<!--&lt;!&ndash;                  }, 0)&ndash;&gt;-->
+<!--&lt;!&ndash;                  }}&ndash;&gt;-->
+<!--                  {{ totalVentas }}-->
+<!--                  Bs</q-item-label>-->
+<!--              </q-item-section>-->
+<!--              <q-item-section side class="text-white text-subtitle2">-->
+<!--                QR: {{ totalQR }} Bs<br />-->
+<!--                Efectivo: {{ totalEfectivo }} Bs-->
+<!--              </q-item-section>-->
+<!--            </q-item>-->
+<!--          </q-card-section>-->
+<!--        </q-card>-->
+<!--      </div>-->
 
-      <div class="col-12 col-md-4 q-pa-xs">
+<!--      <div class="col-12 col-md-4 q-pa-xs">-->
+<!--        <q-card flat bordered>-->
+<!--          <q-card-section class="q-pa-none">-->
+<!--            <q-item class="bg-red">-->
+<!--              <q-item-section avatar>-->
+<!--                <q-icon name="monetization_on" size="50px" color="white" />-->
+<!--              </q-item-section>-->
+<!--              <q-item-section>-->
+<!--                <q-item-label caption class="text-white">Gastos</q-item-label>-->
+<!--                <q-item-label class="text-white text-h4">-->
+<!--&lt;!&ndash;                  {{&ndash;&gt;-->
+<!--&lt;!&ndash;                    ventas.reduce((acc, v) => {&ndash;&gt;-->
+<!--&lt;!&ndash;                      const esGasto = String(v.tipo_comprobante || '').toLowerCase() === 'gastos'&ndash;&gt;-->
+<!--&lt;!&ndash;                      return esGasto && v.estado === 'Activo'&ndash;&gt;-->
+<!--&lt;!&ndash;                        ? acc + parseFloat(v.total || 0)&ndash;&gt;-->
+<!--&lt;!&ndash;                        : acc&ndash;&gt;-->
+<!--&lt;!&ndash;                    }, 0)&ndash;&gt;-->
+<!--&lt;!&ndash;                  }}&ndash;&gt;-->
+<!--                  {{ totalGastos }}-->
+<!--                  Bs</q-item-label>-->
+<!--              </q-item-section>-->
+<!--            </q-item>-->
+<!--          </q-card-section>-->
+<!--        </q-card>-->
+<!--      </div>-->
+<!--      ventas efectivo-->
+<!--      ventas qr fgastos -->
+<!--      total efectio+qr-gastos-->
+      <div class="col-12">
         <q-card flat bordered>
           <q-card-section class="q-pa-none">
-            <q-item class="bg-red">
-              <q-item-section avatar>
-                <q-icon name="monetization_on" size="50px" color="white" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption class="text-white">Gastos</q-item-label>
-                <q-item-label class="text-white text-h4">
-<!--                  {{-->
-<!--                    ventas.reduce((acc, v) => {-->
-<!--                      const esGasto = String(v.tipo_comprobante || '').toLowerCase() === 'gastos'-->
-<!--                      return esGasto && v.estado === 'Activo'-->
-<!--                        ? acc + parseFloat(v.total || 0)-->
-<!--                        : acc-->
-<!--                    }, 0)-->
-<!--                  }}-->
-                  {{ totalGastos }}
-                  Bs</q-item-label>
-              </q-item-section>
-            </q-item>
+            <div class="row q-col-gutter-sm items-center q-pa-sm">
+              <div class="col-12 col-md-3">
+                <q-item class="bg-green">
+                  <q-item-section avatar>
+                    <q-icon name="monetization_on" size="40px" color="white" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label caption class="text-white">
+                      Ventas Efectivo
+                    </q-item-label>
+                    <q-item-label class="text-white text-h5">
+                      {{ totalEfectivo }} Bs
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </div>
+              <div class="col-12 col-md-3">
+                <q-item class="bg-orange">
+                  <q-item-section avatar>
+                    <q-icon name="monetization_on" size="40px" color="white" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label caption class="text-white">
+                      Ventas QR
+                    </q-item-label>
+                    <q-item-label class="text-white text-h5">
+                      {{ totalQR }} Bs
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </div>
+              <div class="col-12 col-md-3">
+                <q-item class="bg-red">
+                  <q-item-section avatar>
+                    <q-icon name="monetization_on" size="40px" color="white" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label caption class="text-white">
+                      Gastos
+                    </q-item-label>
+                    <q-item-label class="text-white text-h5">
+                      {{ totalEfectivo + totalQR - totalGastos }} Bs
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </div>
+              <div class="col-12 col-md-3">
+                <q-item class="bg-indigo">
+                  <q-item-section avatar>
+                    <q-icon name="monetization_on" size="40px" color="white" />
+                  </q-item-section>
+                  <q-item-section>
+                    <q-item-label caption class="text-white">
+                      Neto
+                    </q-item-label>
+                    <q-item-label class="text-white text-h5">
+                      {{ totalVentas - totalGastos }} Bs
+                    </q-item-label>
+                  </q-item-section>
+                </q-item>
+              </div>
+            </div>
           </q-card-section>
         </q-card>
       </div>

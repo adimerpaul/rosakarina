@@ -73,7 +73,7 @@
           <q-card-section class="row items-center">
             <q-icon name="trending_up" size="28px" class="q-mr-sm" />
             <div>
-              <div class="text-subtitle2">Ganancia (Ventas - Gastos)</div>
+              <div class="text-subtitle2">TOTAL</div>
               <div class="text-h5 text-weight-bold">{{ fmt(k.ganancia) }} Bs</div>
             </div>
           </q-card-section>

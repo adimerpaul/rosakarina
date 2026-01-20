@@ -38,8 +38,8 @@
                           {{ $filters.textUpper(prod.nombre) }}
                         </div>
                         <div style="display:flex;justify-content:space-between;">
-                          <span>{{ prod.stock }}</span>
-                          <span class="text-bold bg-orange text-black">{{ prod.precio }} Bs</span>
+                          <span>{{ prod.cantidad }}</span>
+<!--                          <span class="text-bold bg-orange text-black">{{ prod.precio }} Bs</span>-->
                         </div>
                       </div>
                     </q-img>
@@ -62,8 +62,8 @@
                 <tr>
                   <th>Producto</th>
                   <th style="width:90px;">Cantidad</th>
-                  <th style="width:110px;">Precio</th>
-                  <th style="width:120px;">Subtotal</th>
+<!--                  <th style="width:110px;">Precio</th>-->
+<!--                  <th style="width:120px;">Subtotal</th>-->
                 </tr>
                 </thead>
 
@@ -81,8 +81,8 @@
                     <input v-model.number="it.cantidad" type="number" min="0" step="0.01" style="width:80px;" />
                   </td>
 
-                  <td class="text-right text-bold">{{ Number(it.producto.precio||0).toFixed(2) }} Bs</td>
-                  <td class="text-right">{{ (Number(it.cantidad||0)*Number(it.producto.precio||0)).toFixed(2) }} Bs</td>
+<!--                  <td class="text-right text-bold">{{ Number(it.producto.precio||0).toFixed(2) }} Bs</td>-->
+<!--                  <td class="text-right">{{ (Number(it.cantidad||0)*Number(it.producto.precio||0)).toFixed(2) }} Bs</td>-->
                 </tr>
 
                 <tr v-if="items.length===0">
@@ -92,7 +92,7 @@
 
                 <tfoot>
                 <tr>
-                  <td colspan="3" class="text-right text-bold">Total</td>
+                  <td colspan="" class="text-right text-bold">Total</td>
                   <td class="text-right text-bold">{{ total }} Bs</td>
                 </tr>
                 </tfoot>
