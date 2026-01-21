@@ -131,7 +131,7 @@
                       Gastos
                     </q-item-label>
                     <q-item-label class="text-white text-h5">
-                      {{ totalEfectivo + totalQR - totalGastos }} Bs
+                      {{ totalGastos }} Bs
                     </q-item-label>
                   </q-item-section>
                 </q-item>
@@ -146,7 +146,7 @@
                       Neto
                     </q-item-label>
                     <q-item-label class="text-white text-h5">
-                      {{ totalVentas - totalGastos }} Bs
+                      {{ totalEfectivo + totalQR - totalGastos }} Bs
                     </q-item-label>
                   </q-item-section>
                 </q-item>
