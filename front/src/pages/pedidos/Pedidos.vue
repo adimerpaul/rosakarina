@@ -78,7 +78,7 @@
         <th>Teléfono</th>
         <th>Usuario</th>
         <th>Estado</th>
-        <th>Subtotal</th>
+<!--        <th>Subtotal</th>-->
         <th>Detalle</th>
       </tr>
       </thead>
@@ -109,8 +109,40 @@
             {{ p.estado }}
           </q-chip>
         </td>
-        <td class="text-bold">{{ Number(p.subtotal || 0).toFixed(2) }} Bs</td>
-        <td><div style="max-width: 240px; line-height: 1.1;">{{ p.detailsText }}</div></td>
+<!--        <td class="text-bold">{{ Number(p.subtotal || 0).toFixed(2) }} Bs</td>-->
+        <td>
+<!--          <div style="max-width: 240px; line-height: 1.1;">{{ p.detailsText }}</div>-->
+<!--          <pre>{{p.detalles}}</pre>-->
+          <ul class="q-pa-none q-ma-none">
+            <li v-for="d in p.detalles" :key="d.id">
+              {{ d.cantidad }} x {{ d.nombre }}
+<!--              ({{ Number(d.precio).toFixed(2) }} Bs) = {{ Number(d.subtotal).toFixed(2) }} Bs-->
+            </li>
+          </ul>
+<!--          [-->
+<!--          {-->
+<!--          "id": 6,-->
+<!--          "pedido_id": 3,-->
+<!--          "producto_id": 4452,-->
+<!--          "nombre": "4 DERM 10 GR",-->
+<!--          "precio": "30.00",-->
+<!--          "cantidad": "1.00",-->
+<!--          "subtotal": "30.00",-->
+<!--          "estado": "Activo",-->
+<!--          "producto": {-->
+<!--          "id": 4452,-->
+<!--          "nombre": "4 DERM 10 GR",-->
+<!--          "imagen": "17063795654 DERM 10 GR.jpg",-->
+<!--          "descripcion": "Antimicótico y antiinflamatorio",-->
+<!--          "unidad": "CREMA DERMICA",-->
+<!--          "precio": "30.00",-->
+<!--          "stock": null,-->
+<!--          "stock_minimo": null,-->
+<!--          "stock_maximo": null,-->
+<!--          "cantidad": 0-->
+<!--          }-->
+<!--          },-->
+        </td>
       </tr>
 
       <tr v-if="!loading && pedidos.length === 0">

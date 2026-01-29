@@ -76,7 +76,7 @@ class ProductoController extends Controller{
                 });
             })
             // Filtra solo los que tienen cantidad > 0 (en SQL, no en PHP)
-            ->having('cantidad', '>', 0)
+//            ->having('cantidad', '>', 0)
             ->orderBy('productos.nombre')
             ->paginate($perPage);
 

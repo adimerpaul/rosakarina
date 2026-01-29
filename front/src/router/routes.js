@@ -32,6 +32,12 @@ const routes = [
         name: 'pedidos-create',
         component: () => import('pages/pedidos/PedidosCreate.vue')
       }
+      ,
+      {
+        path: '/devoluciones',
+        name: 'devoluciones',
+        component: () => import('pages/devoluciones/Devoluciones.vue')
+      }
     ]
   },
   {

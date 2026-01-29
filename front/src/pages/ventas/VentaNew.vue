@@ -54,7 +54,7 @@
                         class="q-mb-xs"
                         style="height: 120px;"
                       >
-                        <div class="absolute-bottom text-center" style="padding: 0;margin: 0;">
+                        <div :class="{'bg-red-2': producto.cantidad <= 5}" class="absolute-bottom text-center " style="padding: 0;margin: 0;">
                           <div :class="{'text-red text-bold': producto.cantidad <= 5}" style="max-width: 190px;line-height: 0.9;">
                             {{ $filters.textUpper(producto.nombre) }}
                           </div>

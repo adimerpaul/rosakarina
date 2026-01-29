@@ -178,6 +178,8 @@ export default {
         { title: 'Compras Nueva', icon: 'add_business', link: '/compras-create', can: 'Compras nuevas'},
         { title: 'Pedidos', icon: 'assignment', link: '/pedidos', can: 'Compras'},
         { title: 'Pedidos Crear', icon: 'note_add', link: '/pedidos/create', can: 'Compras'},
+        // fecha devoluciones
+        { title: 'Devoluciones', icon: 'undo', link: '/devoluciones', can: 'Todos'},
         // {
         //   path: '/pedidos',
         //   name: 'pedidos',
