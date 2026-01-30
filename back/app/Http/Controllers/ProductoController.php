@@ -60,6 +60,7 @@ class ProductoController extends Controller{
         $perPage = (int) $request->input('per_page', 10);
 
         $productos = Producto::query()
+            ->whereHas('comprasDetalles')
             // Calcula el cantidad en SQL (suma de cantidad_venta con estado Activo)
             ->withSum(
                 ['comprasDetalles as cantidad' => function ($q) {
