@@ -176,10 +176,10 @@ export default {
         { title: 'Proveedores', icon: 'local_shipping', link: '/proveedores', can: 'Proveedores'},
         { title: 'Compras', icon: 'shopping_cart_checkout', link: '/compras', can: 'Compras'},
         { title: 'Compras Nueva', icon: 'add_business', link: '/compras-create', can: 'Compras nuevas'},
-        { title: 'Pedidos', icon: 'assignment', link: '/pedidos', can: 'Compras'},
-        { title: 'Pedidos Crear', icon: 'note_add', link: '/pedidos/create', can: 'Compras'},
+        { title: 'Pedidos', icon: 'assignment', link: '/pedidos', can: 'Pedidos'},
+        { title: 'Pedidos Crear', icon: 'note_add', link: '/pedidos/create', can: 'Pedidos nuevos'},
         // fecha devoluciones
-        { title: 'Devoluciones', icon: 'undo', link: '/devoluciones', can: 'Todos'},
+        { title: 'Devoluciones', icon: 'undo', link: '/devoluciones', can: 'Devoluciones'},
         // {
         //   path: '/pedidos',
         //   name: 'pedidos',
