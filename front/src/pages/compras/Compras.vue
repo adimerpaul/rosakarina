@@ -121,8 +121,14 @@
         <td><q-chip :color="compra.estado === 'Activo' ? 'positive' : 'negative'" class="text-white" dense>{{ compra.estado }}</q-chip></td>
         <td class="text-bold">{{ compra.total }} Bs</td>
         <td>
-          <div style="max-width: 200px; line-height: 1.1;">
-            {{ compra.detailsText }}
+          <div class="detalle-wrap">
+            <ul v-if="detallesCompra(compra).length" class="detalle-list">
+              <li v-for="d in detallesCompra(compra)" :key="d.id || `${compra.id}-${d.producto_id}-${d.lote || 'sin-lote'}`" class="detalle-item">
+                <span class="detalle-nombre">{{ d.cantidad }} x {{ d.nombre || d.producto?.nombre || 'Producto' }}</span>
+                <span class="detalle-precio">{{ formatBs(d.precio) }} Bs</span>
+              </li>
+            </ul>
+            <span v-else class="text-grey-6">Sin detalle</span>
           </div>
         </td>
         <td><q-chip :color="compra.tipo_pago === 'Efectivo' ? 'green' : 'blue'" class="text-white" dense>{{ compra.tipo_pago }}</q-chip></td>
@@ -171,6 +177,13 @@ export default {
     }
   },
   methods: {
+    detallesCompra(compra) {
+      return compra.compra_detalles || compra.compraDetalles || []
+    },
+    formatBs(value) {
+      const n = Number(value || 0)
+      return n.toFixed(2)
+    },
     proveedoresGet() {
       this.$axios.get('proveedores').then(res => {
         this.proveedores = res.data
@@ -231,3 +244,31 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.detalle-wrap {
+  min-width: 220px;
+  max-width: 300px;
+}
+.detalle-list {
+  margin: 0;
+  padding-left: 14px;
+  line-height: 1.15;
+}
+.detalle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 2px 0;
+}
+.detalle-nombre {
+  font-size: 12px;
+}
+.detalle-precio {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1b5e20;
+  white-space: nowrap;
+}
+</style>

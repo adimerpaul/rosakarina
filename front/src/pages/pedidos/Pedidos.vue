@@ -96,6 +96,11 @@
               <q-item-section avatar><q-icon name="delete" /></q-item-section>
               <q-item-section>Anular</q-item-section>
             </q-item>
+
+            <q-item clickable v-close-popup @click="eliminar(p.id)">
+              <q-item-section avatar><q-icon name="delete_forever" color="negative" /></q-item-section>
+              <q-item-section>Eliminar</q-item-section>
+            </q-item>
           </q-btn-dropdown>
         </td>
 
@@ -226,6 +231,18 @@ export default {
         this.$axios.put(`pedidosAnular/${id}`).then(() => {
           this.$alert.success('Pedido anulado')
           this.pedidosGet()
+        }).finally(() => { this.loading = false })
+      })
+    },
+
+    eliminar (id) {
+      this.$alert.dialog('¿Eliminar este pedido? Esta acción no se puede deshacer.').onOk(() => {
+        this.loading = true
+        this.$axios.delete(`pedidos/${id}`).then(() => {
+          this.$alert.success('Pedido eliminado')
+          this.pedidosGet()
+        }).catch(err => {
+          this.$alert.error(err.response?.data?.message || 'Error al eliminar pedido')
         }).finally(() => { this.loading = false })
       })
     },

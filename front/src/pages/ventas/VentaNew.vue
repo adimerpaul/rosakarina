@@ -600,7 +600,7 @@ export default {
           tipo_venta: "Internado",
           tipo_pago: "Efectivo",
         };
-        Imprimir.reciboVentaSimple(res.data);
+        // Imprimir.reciboVentaSimple(res.data);
         this.receta_id = null;
         this.$nextTick(() => this.$refs.inputBuscarProducto?.focus());
         this.productosGet();
