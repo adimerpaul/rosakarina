@@ -157,7 +157,7 @@
     </q-card>
 
     <!-- DIALOGO CONFIRMAR VENTA -->
-    <q-dialog v-model="ventaDialog">
+    <q-dialog v-model="ventaDialog" @keyup.enter.stop="() => !loading && submitVenta()">
       <q-card style="max-width: 750px; width: 90vw">
         <q-card-section class="q-pb-none row items-center">
           <div class="text-h6">Nueva venta</div>
@@ -575,6 +575,7 @@ export default {
     },
 
     submitVenta() {
+      if (this.loading) return;
       this.loading = true;
       this.$axios.post("ventas", {
         ci: this.venta.nit,
