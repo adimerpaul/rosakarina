@@ -425,6 +425,7 @@ export default {
     });
     this.productosGet();
     this.doctoresGet();
+    window.addEventListener('keyup', this.onEnterGlobal);
 
     // (Opcional) Voz
     if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
@@ -443,7 +444,17 @@ export default {
     }
   },
 
+  beforeUnmount() {
+    window.removeEventListener('keyup', this.onEnterGlobal);
+  },
+
   methods: {
+    onEnterGlobal(e) {
+      if (e.key !== 'Enter') return;
+      if (this.ventaDialog || this.loteDialog) return;
+      if (this.productosVentas.length === 0) return;
+      this.clickDialogVenta();
+    },
     doctoresGet() {                // 🔵 obtiene doctores
       this.$axios.get('doctores')
         .then(res => {
@@ -516,6 +527,7 @@ export default {
       this.loteProducto = null;
       this.loteCantidad = 1;
       this.lotePrecio = 0;
+      this.$nextTick(() => this.$refs.inputBuscarProducto?.focus());
     },
 
     // ==== CLIENTE & FLUJO VENTA ====

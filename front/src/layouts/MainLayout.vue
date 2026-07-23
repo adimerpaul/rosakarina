@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf">
     <q-header
       class="bg-white text-primary"
       bordered
@@ -88,7 +88,7 @@
       show-if-above
       :width="200"
       :breakpoint="500"
-      class="bg-primary text-white"
+      class="drawer-menu text-white"
     >
       <q-list dense>
         <q-item dense>
@@ -117,8 +117,8 @@
           </q-item-section>
         </q-item>
 <!--        <q-separator  class="bg-white" inset />-->
-        <div class="text-white text-center text-bold">
-          Opciones
+        <div class="menu-label text-center">
+          OPCIONES
         </div>
         <template v-for="link in linksList" :key="link.title">
           <q-item
@@ -229,10 +229,39 @@ export default {
 }
 </script>
 <style>
+.drawer-menu{
+  background: linear-gradient(180deg, #c65307 0%, #803d1a 45%, #b34700 100%);
+}
+.drawer-menu .q-item{
+  border-radius: 6px;
+  margin: 1px 6px;
+  min-height: 32px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  transition: background 0.2s;
+}
+.drawer-menu .q-item:hover{
+  background: rgba(255, 255, 255, 0.1);
+}
 .menu{
-  background-color: #1976D2;
-  border-radius: 10px;
-  margin: 5px;
-  padding: 5px
+  background: linear-gradient(90deg, #e65100 0%, #ff9800 100%);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.drawer-menu .q-item__section--avatar{
+  min-width: 32px;
+  padding-right: 8px;
+}
+.drawer-menu .q-item__label{
+  font-size: 13px;
+}
+.drawer-menu .text-red{
+  color: #ffab91 !important;
+}
+.menu-label{
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 8px 0 4px;
 }
 </style>
