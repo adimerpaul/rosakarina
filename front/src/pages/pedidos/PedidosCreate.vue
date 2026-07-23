@@ -12,7 +12,20 @@
 
             <!-- Productos -->
             <div class="col-12 col-md-5 q-pa-xs">
-              <q-input v-model="search" outlined dense debounce="300" label="Buscar producto" @update:modelValue="productosGet" clearable>
+              <q-select
+                v-model="proveedorFiltro"
+                :options="proveedores"
+                option-label="nombre"
+                option-value="id"
+                outlined dense clearable
+                label="Filtrar por proveedor"
+                class="q-mb-xs"
+                @update:model-value="onProveedorFiltro"
+              >
+                <template #prepend><q-icon name="local_shipping"/></template>
+              </q-select>
+
+              <q-input v-model="search" outlined dense debounce="300" label="Buscar producto" @update:modelValue="onSearch" clearable>
                 <template #append><q-icon name="search"/></template>
                 <template #after><q-btn flat round dense icon="refresh" @click="productosGet"/></template>
               </q-input>
@@ -165,6 +178,7 @@ export default {
 
       proveedores: [],
       proveedor: null,
+      proveedorFiltro: null,
       telefono: '',
       observacion: ''
     }
@@ -183,10 +197,25 @@ export default {
   },
 
   methods: {
+    onProveedorFiltro () {
+      this.pagination.page = 1
+      this.productosGet()
+    },
+
+    onSearch () {
+      this.pagination.page = 1
+      this.productosGet()
+    },
+
     productosGet () {
       this.loading = true
       this.$axios.get('productos', {
-        params: { search: this.search, page: this.pagination.page, per_page: this.pagination.rowsPerPage }
+        params: {
+          search: this.search,
+          page: this.pagination.page,
+          per_page: this.pagination.rowsPerPage,
+          proveedor_id: this.proveedorFiltro?.id || undefined
+        }
       }).then(res => {
         // si tu endpoint devuelve paginado:
         this.productos = res.data.data || res.data
@@ -216,6 +245,10 @@ export default {
       if (bad) {
         this.$alert.error('Todas las cantidades deben ser mayores a 0')
         return
+      }
+      if (!this.proveedor && this.proveedorFiltro) {
+        this.proveedor = this.proveedorFiltro
+        this.syncProveedor(this.proveedorFiltro)
       }
       this.confirmDialog = true
     },

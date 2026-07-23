@@ -153,26 +153,39 @@ class CompraController extends Controller{
                 'nombre' => $proveedor->nombre ?? null,
                 'estado' => 'Activo',
                 'tipo_pago' => $request->tipo_pago,
-                'total' => collect($request->productos)->sum(fn($p) => $p['precio'] * $p['cantidad']),
+                'total' => 0,
                 'nro_factura' => $request->nro_factura ?? null,
             ]);
 
             // Crear los detalles
+            $totalCompra = 0;
             foreach ($request->productos as $p) {
+                $cantidad = (float)($p['cantidad'] ?? 0);
+                $factor = (float)($p['factor'] ?? 0);
+                $precioVenta = (float)($p['precio_venta'] ?? 0);
+
+                // Precio factura: si no lo llenaron, derivarlo del precio de venta / factor
+                $precio = (float)($p['precio'] ?? 0);
+                if ($precio <= 0 && $precioVenta > 0 && $factor > 0) {
+                    $precio = round($precioVenta / $factor, 2);
+                }
+
+                $totalCompra += $precio * $cantidad;
+
                 CompraDetalle::create([
                     'compra_id' => $compra->id,
                     'user_id' => auth()->id(),
                     'producto_id' => $p['producto_id'],
                     'proveedor_id' => $compra->proveedor_id,
                     'nombre' => $p['producto']['nombre'],
-                    'precio' => $p['precio'] ?? 0,
-                    'cantidad' => $p['cantidad'],
-                    'cantidad_venta' => $p['cantidad'],
-                    'factor' => $p['factor'],
-                    'total' => $p['precio'] * $p['cantidad'],
-                    'precio13' => $p['precio'] ?? 0 * 1.3,
-                    'total13' => $p['precio'] ?? 0 * $p['cantidad'] * 1.3,
-                    'precio_venta' => $p['precio_venta'] ?? 0,
+                    'precio' => $precio,
+                    'cantidad' => $cantidad,
+                    'cantidad_venta' => $cantidad,
+                    'factor' => $factor,
+                    'total' => round($precio * $cantidad, 2),
+                    'precio13' => round($precio * 1.3, 2),
+                    'total13' => round($precio * $cantidad * 1.3, 2),
+                    'precio_venta' => $precioVenta,
                     'estado' => 'Activo',
                     'lote' => $p['lote'],
                     'fecha_vencimiento' => $p['fecha_vencimiento'],
@@ -188,6 +201,8 @@ class CompraController extends Controller{
 //                $producto->precio = $p['precio_venta'];
 //                $producto->save();
             }
+
+            $compra->update(['total' => round($totalCompra, 2)]);
 
             DB::commit();
             $compraSearch = Compra::with(['user', 'proveedor', 'compraDetalles.producto'])->find($compra->id);

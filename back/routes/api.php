@@ -87,6 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/productosCantidad', [\App\Http\Controllers\ProductoController::class, 'productosCantidad']);
 
     Route::get('/productos/{id}/historial-compras-ventas', [App\Http\Controllers\ProductoController::class, 'historialComprasVentas']);
+    Route::get('/productos/{id}/historial-ventas', [App\Http\Controllers\ProductoController::class, 'historialVentas']);
 
     Route::get('/doctores', [App\Http\Controllers\DoctorController::class, 'index']);
     Route::post('/doctores', [App\Http\Controllers\DoctorController::class, 'store']);
@@ -113,5 +114,7 @@ Route::get('historial_medicos/{id}/pdf', [App\Http\Controllers\HistorialMedicoCo
 Route::get('receta/{id}/pdf', [App\Http\Controllers\RecetaController::class, 'generatePdf']);
 
 Route::get('pacientes/{paciente}/proforma-pdf', [\App\Http\Controllers\VentaController::class, 'proformaPacientePdf']);
+
+Route::get('productos-pdf', [App\Http\Controllers\ProductoController::class, 'productosPdf']);
 
 

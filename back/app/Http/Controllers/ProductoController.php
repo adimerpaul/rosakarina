@@ -2,12 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompraDetalle;
 use App\Models\Producto;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 
 class ProductoController extends Controller{
+    public function historialVentas($productoId)
+    {
+        $detalles = \App\Models\VentaDetalle::with('venta')
+            ->where('producto_id', $productoId)
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json($detalles);
+    }
+    public function productosPdf(Request $request)
+    {
+        $productos = Producto::orderBy('nombre')->get();
+
+        if ($request->boolean('solo_existentes')) {
+            $productos = $productos->filter(fn ($p) => $p->cantidad > 0)->values();
+        }
+
+        $pdf = Pdf::loadView('pdf.productos', [
+            'productos' => $productos,
+            'fecha' => now()->format('d/m/Y H:i'),
+        ]);
+
+        return $pdf->stream('productos.pdf');
+    }
     public function precios(Request $request)
     {
         $search  = trim($request->input('search', ''));
@@ -95,6 +121,11 @@ class ProductoController extends Controller{
             $query->where('nombre', 'like', "%$search%")
                 ->orWhere('descripcion', 'like', "%$search%");
         })
+            ->when($request->filled('proveedor_id'), function ($query) use ($request) {
+                $query->whereIn('id', CompraDetalle::where('proveedor_id', $request->proveedor_id)
+                    ->whereNull('deleted_at')
+                    ->select('producto_id'));
+            })
             ->orderBy('nombre')
             ->paginate($perPage);
 

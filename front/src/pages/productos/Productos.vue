@@ -3,7 +3,22 @@
 <q-card flat bordered>
   <q-card-section class="q-pa-xs">
     <div class="text-right">
-      <q-btn color="primary" label="Descargar" no-caps  icon="fa-solid fa-file-excel" :loading="loading" @click="exportExcel" />
+      <q-btn-dropdown color="primary" label="Descargar" no-caps icon="fa-solid fa-file-excel" :loading="loading">
+        <q-list>
+          <q-item clickable v-close-popup @click="exportExcel(false)">
+            <q-item-section avatar><q-icon name="fa-solid fa-file-excel" color="green" /></q-item-section>
+            <q-item-section><q-item-label>Exportar todo (Excel)</q-item-label></q-item-section>
+          </q-item>
+          <q-item clickable v-close-popup @click="exportExcel(true)">
+            <q-item-section avatar><q-icon name="fa-solid fa-file-excel" color="teal" /></q-item-section>
+            <q-item-section><q-item-label>Exportar solo existentes (Excel)</q-item-label></q-item-section>
+          </q-item>
+          <q-item clickable v-close-popup @click="imprimirPdf">
+            <q-item-section avatar><q-icon name="fa-solid fa-file-pdf" color="red" /></q-item-section>
+            <q-item-section><q-item-label>Imprimir PDF</q-item-label></q-item-section>
+          </q-item>
+        </q-list>
+      </q-btn-dropdown>
       <q-btn color="green" label="Nuevo" @click="productoNew" no-caps  icon="add_circle_outline" :loading="loading" />
       <q-input v-model="filter" label="Buscar" dense outlined debounce="300" @update:modelValue="productosGet">
         <template v-slot:append>
@@ -57,7 +72,7 @@
                 </q-item>
                 <q-item clickable @click="verHistorial(producto)" v-close-popup>
                   <q-item-section avatar><q-icon name="history" /></q-item-section>
-                  <q-item-section><q-item-label>Historial de compras</q-item-label></q-item-section>
+                  <q-item-section><q-item-label>Historial de compras y ventas</q-item-label></q-item-section>
                 </q-item>
 <!--                opcion de cambiar foto-->
                 <q-item clickable v-close-popup @click="productoEditFoto(producto)">
@@ -125,7 +140,7 @@
             <!-- CAMPOS EXISTENTES -->
             <q-input v-model="producto.nombre" label="Nombre" dense outlined />
             <q-input v-model="producto.descripcion" label="Descripción" dense outlined />
-            <q-input v-model="producto.unidad" label="Unidad" dense outlined />
+            <q-input v-model="producto.unidad" label="Presentacion" dense outlined />
             <q-input v-model="producto.precio" label="Precio" dense outlined type="number" />
             <q-input v-model="producto.stock" label="Stock" dense outlined />
 
@@ -168,41 +183,102 @@
       </q-card>
     </q-dialog>
     <q-dialog v-model="historialDialog" persistent>
-      <q-card style="width: 800px;">
+      <q-card style="width: 1100px; max-width: 95vw;">
         <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Historial de Compras: {{ productoHistorialNombre }}</div>
+          <div class="text-h6">Historial de Compras y Ventas: {{ productoHistorialNombre }}</div>
           <q-space />
           <q-btn icon="close" flat round dense @click="historialDialog = false" />
         </q-card-section>
         <q-card-section class="q-pt-none">
-          <q-markup-table dense wrap-cells flat bordered>
-            <thead>
-            <tr>
-              <th>#</th>
-              <th>Fecha</th>
-              <th>Proveedor</th>
-              <th>Lote</th>
-              <th>Vencimiento</th>
-              <th>Cantidad</th>
-              <th>Precio</th>
-              <th>Total</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="(item, i) in historialCompras" :key="item.id">
-              <td>{{ i + 1 }}</td>
-              <td>{{ item.compra?.fecha }}</td>
-              <td>{{ item.lote }}</td>
-              <td>
-                {{ item.proveedor?.nombre }}
-              </td>
-              <td>{{ item.fecha_vencimiento }}</td>
-              <td>{{ item.cantidad }}</td>
-              <td>{{ item.precio }}</td>
-              <td>{{ item.total }}</td>
-            </tr>
-            </tbody>
-          </q-markup-table>
+          <q-tabs v-model="historialTab" dense align="left" class="text-primary">
+            <q-tab name="compras" label="Compras" no-caps icon="fa-solid fa-cart-shopping" />
+            <q-tab name="ventas" label="Ventas" no-caps icon="fa-solid fa-cash-register" />
+          </q-tabs>
+          <q-separator />
+          <q-tab-panels v-model="historialTab" animated>
+            <q-tab-panel name="compras" class="q-pa-none">
+              <q-markup-table dense wrap-cells flat bordered>
+                <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Proveedor</th>
+                  <th>Lote</th>
+                  <th>Vencimiento</th>
+                  <th>Cantidad</th>
+                  <th>Vendida</th>
+                  <th>Disponible</th>
+                  <th>Precio</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(item, i) in historialCompras" :key="item.id">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ item.compra?.fecha }}</td>
+                  <td>{{ item.proveedor?.nombre }}</td>
+                  <td>{{ item.lote }}</td>
+                  <td>{{ item.fecha_vencimiento }}</td>
+                  <td class="text-center">
+                    <q-chip color="blue" text-color="white" dense square>{{ item.cantidad }}</q-chip>
+                  </td>
+                  <td class="text-center">
+                    <q-chip color="orange" text-color="white" dense square>{{ vendida(item) }}</q-chip>
+                  </td>
+                  <td class="text-center">
+                    <q-chip :color="Number(item.cantidad_venta) > 0 ? 'green' : 'grey'" text-color="white" dense square>{{ item.cantidad_venta }}</q-chip>
+                  </td>
+                  <td>{{ item.precio }}</td>
+                  <td>{{ item.total }}</td>
+                  <td class="text-center">
+                    <q-chip :color="item.estado === 'Activo' ? 'positive' : 'negative'" text-color="white" dense :icon="item.estado === 'Activo' ? 'check_circle' : 'cancel'">
+                      {{ item.estado }}
+                    </q-chip>
+                  </td>
+                </tr>
+                <tr v-if="!historialCompras.length">
+                  <td colspan="11" class="text-center text-grey">Sin compras registradas</td>
+                </tr>
+                </tbody>
+              </q-markup-table>
+            </q-tab-panel>
+            <q-tab-panel name="ventas" class="q-pa-none">
+              <q-markup-table dense wrap-cells flat bordered>
+                <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Cliente</th>
+                  <th>Lote</th>
+                  <th>Cantidad</th>
+                  <th>Precio</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(item, i) in historialVentas" :key="item.id">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ item.venta?.fecha }}</td>
+                  <td>{{ item.venta?.nombre }}</td>
+                  <td>{{ item.lote }}</td>
+                  <td>{{ item.cantidad }}</td>
+                  <td>{{ item.precio }}</td>
+                  <td>{{ (Number(item.cantidad) * Number(item.precio)).toFixed(2) }}</td>
+                  <td class="text-center">
+                    <q-chip :color="item.venta?.estado === 'Anulado' ? 'negative' : 'positive'" text-color="white" dense :icon="item.venta?.estado === 'Anulado' ? 'cancel' : 'check_circle'">
+                      {{ item.venta?.estado }}
+                    </q-chip>
+                  </td>
+                </tr>
+                <tr v-if="!historialVentas.length">
+                  <td colspan="8" class="text-center text-grey">Sin ventas registradas</td>
+                </tr>
+                </tbody>
+              </q-markup-table>
+            </q-tab-panel>
+          </q-tab-panels>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -268,6 +344,8 @@ export default {
       ],
       historialDialog: false,
       historialCompras: [],
+      historialVentas: [],
+      historialTab: 'compras',
       productoHistorialNombre: '',
       dialogFoto: false,
     }
@@ -310,14 +388,21 @@ export default {
       this.dialogFoto = true
       this.producto = { ...producto }
     },
+    vendida(item) {
+      return Number(item.cantidad || 0) - Number(item.cantidad_venta || 0)
+    },
     verHistorial(producto) {
       this.loading = true;
       this.productoHistorialNombre = producto.nombre;
-      this.$axios.get(`productos/${producto.id}/historial-compras`)
-        .then(res => {
-          this.historialCompras = res.data;
-          this.historialDialog = true;
-        }).catch(err => {
+      Promise.all([
+        this.$axios.get(`productos/${producto.id}/historial-compras`),
+        this.$axios.get(`productos/${producto.id}/historial-ventas`)
+      ]).then(([compras, ventas]) => {
+        this.historialCompras = compras.data;
+        this.historialVentas = ventas.data;
+        this.historialTab = 'compras';
+        this.historialDialog = true;
+      }).catch(err => {
         this.$alert.error("Error al obtener historial");
       }).finally(() => {
         this.loading = false;
@@ -345,9 +430,13 @@ export default {
         this.loading = false
       })
     },
-    exportExcel() {
+    exportExcel(soloExistentes = false) {
       this.loading = true
       this.$axios.get('productosAll').then(res => {
+        let content = res.data
+        if (soloExistentes) {
+          content = content.filter(p => Number(p.cantidad) > 0)
+        }
         let data = [{
           columns: [
             {label: "Nombre", value: "nombre"},
@@ -358,14 +447,17 @@ export default {
             {label: "Stock mínimo", value: "stock_minimo"},
             {label: "Stock máximo", value: "stock_maximo"},
           ],
-          content: res.data
+          content: content
         }]
-        Excel.export(data,'Productos')
+        Excel.export(data, soloExistentes ? 'ProductosExistentes' : 'Productos')
       }).catch(error => {
         this.$alert.error(error.response.data.message)
       }).finally(() => {
         this.loading = false
       })
+    },
+    imprimirPdf() {
+      window.open(`${this.$url}/../productos-pdf`, '_blank')
     },
     productoNew() {
       this.producto = {}

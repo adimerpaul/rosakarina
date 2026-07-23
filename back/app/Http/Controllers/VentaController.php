@@ -269,7 +269,26 @@ class VentaController extends Controller
                 if ($restante > 1e-9) abort(422, 'Stock insuficiente por lotes.');
             }
 
-            $venta->update(['total' => $total]);
+            $tipoPago = $request->input('tipo_pago', 'Efectivo');
+            $montoEfectivo = 0;
+            $montoQr = 0;
+            if ($tipoPago === 'QR') {
+                $montoQr = $total;
+            } elseif ($tipoPago === 'Personalizado') {
+                $montoEfectivo = (float)$request->input('monto_efectivo', 0);
+                $montoQr = (float)$request->input('monto_qr', 0);
+                if (abs(($montoEfectivo + $montoQr) - $total) > 0.01) {
+                    abort(422, 'La suma de efectivo y QR debe ser igual al total de la venta.');
+                }
+            } else {
+                $montoEfectivo = $total;
+            }
+
+            $venta->update([
+                'total'          => $total,
+                'monto_efectivo' => $montoEfectivo,
+                'monto_qr'       => $montoQr,
+            ]);
 
             if ($request->filled('receta_id')) {
                 $receta = Receta::findOrFail((int)$request->input('receta_id'));

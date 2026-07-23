@@ -199,8 +199,37 @@
                 <q-input v-model="venta.complemento" outlined dense label="Complemento"/>
               </div>
               <div class="col-12 col-md-3 q-pa-xs">
-                <q-select v-model="venta.tipo_pago" outlined dense label="Tipo de pago" :options="['Efectivo', 'QR']"/>
+                <q-select
+                  v-model="venta.tipo_pago"
+                  outlined dense
+                  label="Tipo de pago"
+                  :options="['Efectivo', 'QR', 'Personalizado']"
+                  @update:modelValue="onTipoPagoChange"
+                />
               </div>
+              <template v-if="venta.tipo_pago === 'Personalizado'">
+                <div class="col-12 col-md-3 q-pa-xs">
+                  <q-input
+                    v-model.number="venta.monto_efectivo"
+                    outlined dense
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    label="Monto efectivo"
+                    @update:modelValue="onMontoEfectivoChange"
+                  />
+                </div>
+                <div class="col-12 col-md-3 q-pa-xs">
+                  <q-input
+                    v-model.number="venta.monto_qr"
+                    outlined dense
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    label="Monto QR"
+                  />
+                </div>
+              </template>
               <div class="col-12 col-md-4 q-pa-xs">
                 <q-select
                   v-model="venta.codigoTipoDocumentoIdentidad"
@@ -392,6 +421,8 @@ export default {
         tipo_venta: "Internado",
         tipo_pago: "Efectivo",
         doctor_id: null,
+        monto_efectivo: 0,
+        monto_qr: 0,
       },
 
       pagination: {
@@ -449,6 +480,21 @@ export default {
   },
 
   methods: {
+    onTipoPagoChange(tipo) {
+      if (tipo === 'Personalizado') {
+        this.venta.monto_efectivo = this.totalVenta;
+        this.venta.monto_qr = 0;
+      } else {
+        this.venta.monto_efectivo = 0;
+        this.venta.monto_qr = 0;
+      }
+    },
+    onMontoEfectivoChange() {
+      const efectivo = Number(this.venta.monto_efectivo || 0);
+      let qr = this.totalVenta - efectivo;
+      if (qr < 0) qr = 0;
+      this.venta.monto_qr = Number(qr.toFixed(2));
+    },
     onEnterGlobal(e) {
       if (e.key !== 'Enter') return;
       if (this.ventaDialog || this.loteDialog) return;
@@ -556,6 +602,7 @@ export default {
       this.ventaDialog = true;
       // reset efectivo
       this.efectivo = '';
+      this.onTipoPagoChange(this.venta.tipo_pago);
       // defecto externo
       this.venta.tipo_venta = 'Externo';
       this.venta.fecha = moment().format('YYYY-MM-DD');
@@ -588,6 +635,14 @@ export default {
 
     submitVenta() {
       if (this.loading) return;
+      if (this.venta.tipo_pago === 'Personalizado') {
+        const suma = Number(this.venta.monto_efectivo || 0) + Number(this.venta.monto_qr || 0);
+        if (Math.abs(suma - this.totalVenta) > 0.01) {
+          this.$alert?.error?.("La suma de efectivo y QR debe ser igual al total de la venta")
+          || this.$q.notify({type: 'negative', message: 'La suma de efectivo y QR debe ser igual al total de la venta'});
+          return;
+        }
+      }
       this.loading = true;
       this.$axios.post("ventas", {
         ci: this.venta.nit,
@@ -598,6 +653,8 @@ export default {
         productos: this.productosVentas, // incluye compra_detalle_id por línea
         tipo_venta: this.venta.tipo_venta,
         tipo_pago: this.venta.tipo_pago,
+        monto_efectivo: this.venta.monto_efectivo,
+        monto_qr: this.venta.monto_qr,
         receta_id: this.receta_id,
         doctor_id: this.venta.doctor_id,
         fecha: this.venta.fecha,
@@ -613,6 +670,8 @@ export default {
           codigoTipoDocumentoIdentidad: 1,
           tipo_venta: "Internado",
           tipo_pago: "Efectivo",
+          monto_efectivo: 0,
+          monto_qr: 0,
         };
         // Imprimir.reciboVentaSimple(res.data);
         this.receta_id = null;

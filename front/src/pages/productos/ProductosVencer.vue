@@ -41,7 +41,22 @@
           </div>
         </div>
 
-        <q-markup-table dense class="q-mt-md" flat bordered>
+        <div class="row q-mt-xs">
+          <div class="col-12 col-md-4">
+            <q-input
+              v-model="filtro"
+              dense outlined clearable
+              label="Filtrar por producto, lote o factura"
+            >
+              <template #append><q-icon name="filter_alt"/></template>
+            </q-input>
+          </div>
+          <div class="col-12 col-md-8 flex items-center q-pl-sm text-caption text-grey-8">
+            Mostrando {{ productosFiltrados.length }} de {{ productos.length }} registros
+          </div>
+        </div>
+
+        <q-markup-table dense class="q-mt-sm tabla-vencer" flat bordered>
           <thead>
           <tr>
             <th>#</th>
@@ -50,21 +65,23 @@
             <th>Factura</th>
             <th>Lote</th>
             <th>Proveedor</th>
+            <th>Fecha compra</th>
             <th>Fecha de Vencimiento</th>
             <th>Estado</th>
             <th>Días restantes</th>
           </tr>
           </thead>
           <tbody>
-          <tr v-for="(p,i) in productos" :key="p.id">
+          <tr v-for="(p,i) in productosFiltrados" :key="p.id">
             <td>{{ i + 1 }}</td>
             <td>{{ p.producto?.nombre }}</td>
-            <td>{{ p.cantidad_venta }}</td>
+            <td class="text-right">{{ p.cantidad_venta }}</td>
             <td>
-              {{p.compra.nro_factura}}
+              {{p.compra?.nro_factura}}
             </td>
             <td>{{ p.lote }}</td>
             <td>{{ p.proveedor?.nombre }}</td>
+            <td>{{ p.compra?.fecha }}</td>
             <td>{{ p.fecha_vencimiento }}</td>
             <td>
               <q-badge :color="p.estado === 'Activo' ? 'green' : 'red'" class="q-pa-xs">
@@ -76,6 +93,9 @@
                 {{ diasRestantesColor(p.fecha_vencimiento).dias }} días
               </q-badge>
             </td>
+          </tr>
+          <tr v-if="productosFiltrados.length === 0">
+            <td colspan="10" class="text-center text-grey q-pa-md">Sin resultados</td>
           </tr>
           </tbody>
         </q-markup-table>
@@ -95,8 +115,21 @@ export default {
       productos: [],
       proveedores: [],
       proveedor_id: null, // 👈 NUEVO
+      filtro: '',
       loading: false
     };
+  },
+  computed: {
+    productosFiltrados() {
+      const f = (this.filtro || '').toLowerCase().trim();
+      if (!f) return this.productos;
+      return this.productos.filter(p => {
+        const nombre = (p.producto?.nombre || '').toLowerCase();
+        const lote = (p.lote || '').toLowerCase();
+        const factura = String(p.compra?.nro_factura || '').toLowerCase();
+        return nombre.includes(f) || lote.includes(f) || factura.includes(f);
+      });
+    }
   },
   mounted() {
     this.cargarProveedores();
@@ -159,3 +192,15 @@ export default {
 }
 
 </script>
+<style scoped>
+.tabla-vencer :deep(th),
+.tabla-vencer :deep(td) {
+  padding: 2px 6px;
+  font-size: 12px;
+  height: 26px;
+  line-height: 1.1;
+}
+.tabla-vencer :deep(th) {
+  font-weight: bold;
+}
+</style>

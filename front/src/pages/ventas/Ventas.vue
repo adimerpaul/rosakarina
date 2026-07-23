@@ -301,11 +301,14 @@
 
             <q-chip
               size="10px"
-              :color="venta.tipo_pago === 'Efectivo' ? 'green' : 'blue'"
+              :color="venta.tipo_pago === 'Efectivo' ? 'green' : (venta.tipo_pago === 'Personalizado' ? 'orange' : 'blue')"
               class="text-white"
               dense
             >
               {{ (venta.tipo_pago || 'E').charAt(0) }}
+              <q-tooltip v-if="venta.tipo_pago === 'Personalizado'">
+                Efectivo: {{ venta.monto_efectivo }} Bs — QR: {{ venta.monto_qr }} Bs
+              </q-tooltip>
             </q-chip>
           </td>
 
@@ -633,16 +636,16 @@ export default {
     totalQR() {
       return this.ventas.reduce((acc, v) => {
         const esVenta = String(v.tipo_comprobante || '').toLowerCase() !== 'gastos'
-        return (esVenta && v.tipo_pago === 'QR' && v.estado === 'Activo')
-          ? acc + parseFloat(v.total || 0)
+        return (esVenta && v.estado === 'Activo')
+          ? acc + parseFloat(v.monto_qr || 0)
           : acc
       }, 0)
     },
     totalEfectivo() {
       return this.ventas.reduce((acc, v) => {
         const esVenta = String(v.tipo_comprobante || '').toLowerCase() !== 'gastos'
-        return (esVenta && v.tipo_pago === 'Efectivo' && v.estado === 'Activo')
-          ? acc + parseFloat(v.total || 0)
+        return (esVenta && v.estado === 'Activo')
+          ? acc + parseFloat(v.monto_efectivo || 0)
           : acc
       }, 0)
     },

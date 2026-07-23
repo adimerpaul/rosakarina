@@ -19,6 +19,8 @@ class Venta extends Model{
         'total',
         'tipo_venta',
         'tipo_pago',
+        'monto_efectivo',
+        'monto_qr',
         'pagado_interno',
         'doctor_id',
         'paciente_id_ref',
