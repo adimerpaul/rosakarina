@@ -86,6 +86,7 @@ class ProductoController extends Controller{
         $perPage = (int) $request->input('per_page', 10);
 
         $productos = Producto::query()
+            ->where('activo', true)
             ->whereHas('comprasDetalles')
             // Calcula el cantidad en SQL (suma de cantidad_venta con estado Activo)
             ->withSum(
@@ -116,8 +117,15 @@ class ProductoController extends Controller{
     public function index(Request $request) {
         $search = $request->search;
         $perPage = $request->per_page ?? 10;
+        $orden = $request->input('orden', 'nombre');
 
-        $productos = Producto::where(function ($query) use ($search) {
+        $productos = Producto::withSum(
+            ['comprasDetalles as stock_disponible' => function ($query) {
+                $query->where('estado', 'Activo');
+            }],
+            'cantidad_venta'
+        )
+            ->where(function ($query) use ($search) {
             $query->where('nombre', 'like', "%$search%")
                 ->orWhere('descripcion', 'like', "%$search%");
         })
@@ -126,7 +134,17 @@ class ProductoController extends Controller{
                     ->whereNull('deleted_at')
                     ->select('producto_id'));
             })
-            ->orderBy('nombre')
+            ->when($orden === 'cantidad_asc', function ($query) {
+                $query->orderByRaw('COALESCE(stock_disponible, 0) ASC')
+                    ->orderBy('nombre');
+            })
+            ->when($orden === 'cantidad_desc', function ($query) {
+                $query->orderByRaw('COALESCE(stock_disponible, 0) DESC')
+                    ->orderBy('nombre');
+            })
+            ->when($orden === 'nombre', function ($query) {
+                $query->orderBy('nombre');
+            })
             ->paginate($perPage);
 
         return response()->json($productos);

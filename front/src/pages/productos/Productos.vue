@@ -44,6 +44,7 @@
         <tr>
           <th>Opciones</th>
           <th>Imagen</th>
+          <th>Mostrar en ventas</th>
           <th v-for="column in columns" :key="column.name" :class="column.align">
             {{ column.label }}
           </th>
@@ -88,6 +89,16 @@
               :src="`${$url}../images/${producto.imagen}`"
               style="width: 50px; height: 50px"
               class="q-mr-sm" ></q-img>
+          </td>
+          <td class="text-center">
+            <q-toggle
+              v-model="producto.activo"
+              checked-icon="visibility"
+              unchecked-icon="visibility_off"
+              color="positive"
+              :label="producto.activo ? 'Activo' : 'Inactivo'"
+              @update:model-value="cambiarVisibilidad(producto)"
+            />
           </td>
           <td>
             <div style="max-width: 150px; wrap-option: wrap;line-height: 0.9;">
@@ -203,21 +214,25 @@
                   <th>#</th>
                   <th>Fecha</th>
                   <th>Proveedor</th>
+                  <th>Factura</th>
                   <th>Lote</th>
                   <th>Vencimiento</th>
                   <th>Cantidad</th>
                   <th>Vendida</th>
                   <th>Disponible</th>
-                  <th>Precio</th>
-                  <th>Total</th>
+                  <th>Precio factura</th>
+                  <th>Factor</th>
+                  <th>Precio venta</th>
+                  <th>Total factura</th>
                   <th>Estado</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="(item, i) in historialCompras" :key="item.id">
-                  <td>{{ i + 1 }}</td>
+                <tr v-for="(item, i) in historialComprasPaginadas" :key="item.id">
+                  <td>{{ (paginaHistorialCompras - 1) * filasPorPaginaHistorial + i + 1 }}</td>
                   <td>{{ item.compra?.fecha }}</td>
                   <td>{{ item.proveedor?.nombre }}</td>
+                  <td>{{ item.nro_factura || item.compra?.nro_factura || '-' }}</td>
                   <td>{{ item.lote }}</td>
                   <td>{{ item.fecha_vencimiento }}</td>
                   <td class="text-center">
@@ -229,8 +244,10 @@
                   <td class="text-center">
                     <q-chip :color="Number(item.cantidad_venta) > 0 ? 'green' : 'grey'" text-color="white" dense square>{{ item.cantidad_venta }}</q-chip>
                   </td>
-                  <td>{{ item.precio }}</td>
-                  <td>{{ item.total }}</td>
+                  <td class="text-right text-weight-bold">{{ formatoDinero(item.precio) }} Bs</td>
+                  <td class="text-center">{{ item.factor || '-' }}</td>
+                  <td class="text-right">{{ formatoDinero(item.precio_venta) }} Bs</td>
+                  <td class="text-right text-weight-bold">{{ formatoDinero(item.total) }} Bs</td>
                   <td class="text-center">
                     <q-chip :color="item.estado === 'Activo' ? 'positive' : 'negative'" text-color="white" dense :icon="item.estado === 'Activo' ? 'check_circle' : 'cancel'">
                       {{ item.estado }}
@@ -238,10 +255,20 @@
                   </td>
                 </tr>
                 <tr v-if="!historialCompras.length">
-                  <td colspan="11" class="text-center text-grey">Sin compras registradas</td>
+                  <td colspan="14" class="text-center text-grey">Sin compras registradas</td>
                 </tr>
                 </tbody>
               </q-markup-table>
+              <div v-if="paginasHistorialCompras > 1" class="row justify-center q-mt-md">
+                <q-pagination
+                  v-model="paginaHistorialCompras"
+                  :max="paginasHistorialCompras"
+                  :max-pages="7"
+                  direction-links
+                  boundary-links
+                  color="primary"
+                />
+              </div>
             </q-tab-panel>
             <q-tab-panel name="ventas" class="q-pa-none">
               <q-markup-table dense wrap-cells flat bordered>
@@ -258,8 +285,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="(item, i) in historialVentas" :key="item.id">
-                  <td>{{ i + 1 }}</td>
+                <tr v-for="(item, i) in historialVentasPaginadas" :key="item.id">
+                  <td>{{ (paginaHistorialVentas - 1) * filasPorPaginaHistorial + i + 1 }}</td>
                   <td>{{ item.venta?.fecha }}</td>
                   <td>{{ item.venta?.nombre }}</td>
                   <td>{{ item.lote }}</td>
@@ -277,6 +304,16 @@
                 </tr>
                 </tbody>
               </q-markup-table>
+              <div v-if="paginasHistorialVentas > 1" class="row justify-center q-mt-md">
+                <q-pagination
+                  v-model="paginaHistorialVentas"
+                  :max="paginasHistorialVentas"
+                  :max-pages="7"
+                  direction-links
+                  boundary-links
+                  color="primary"
+                />
+              </div>
             </q-tab-panel>
           </q-tab-panels>
         </q-card-section>
@@ -346,9 +383,28 @@ export default {
       historialCompras: [],
       historialVentas: [],
       historialTab: 'compras',
+      filasPorPaginaHistorial: 20,
+      paginaHistorialCompras: 1,
+      paginaHistorialVentas: 1,
       productoHistorialNombre: '',
       dialogFoto: false,
     }
+  },
+  computed: {
+    historialComprasPaginadas() {
+      const inicio = (this.paginaHistorialCompras - 1) * this.filasPorPaginaHistorial
+      return this.historialCompras.slice(inicio, inicio + this.filasPorPaginaHistorial)
+    },
+    historialVentasPaginadas() {
+      const inicio = (this.paginaHistorialVentas - 1) * this.filasPorPaginaHistorial
+      return this.historialVentas.slice(inicio, inicio + this.filasPorPaginaHistorial)
+    },
+    paginasHistorialCompras() {
+      return Math.max(1, Math.ceil(this.historialCompras.length / this.filasPorPaginaHistorial))
+    },
+    paginasHistorialVentas() {
+      return Math.max(1, Math.ceil(this.historialVentas.length / this.filasPorPaginaHistorial))
+    },
   },
   mounted() {
     this.productosGet()
@@ -356,6 +412,24 @@ export default {
     this.debouncedCambioStock = debounce(this.cambioStock, 500)
   },
   methods: {
+    cambiarVisibilidad(producto) {
+      this.$axios.put(`productos/${producto.id}`, {
+        activo: producto.activo
+      }).then(() => {
+        this.$q.notify({
+          type: 'positive',
+          message: producto.activo
+            ? 'Producto visible en ventas'
+            : 'Producto oculto en ventas'
+        })
+      }).catch(error => {
+        producto.activo = !producto.activo
+        this.$alert.error(error.response?.data?.message || 'No se pudo actualizar el estado')
+      })
+    },
+    formatoDinero(valor) {
+      return Number(valor || 0).toFixed(2)
+    },
     onFotoChange(e) {
       const file = e.target.files[0]
       if (!file) return
@@ -401,6 +475,8 @@ export default {
         this.historialCompras = compras.data;
         this.historialVentas = ventas.data;
         this.historialTab = 'compras';
+        this.paginaHistorialCompras = 1;
+        this.paginaHistorialVentas = 1;
         this.historialDialog = true;
       }).catch(err => {
         this.$alert.error("Error al obtener historial");

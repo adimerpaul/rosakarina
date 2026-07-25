@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Venta;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -115,6 +116,33 @@ class DashboardController extends Controller
             ->limit(12)
             ->get();
 
+        $productosVendidosQuery = DB::table('venta_detalles')
+            ->join('ventas', 'ventas.id', '=', 'venta_detalles.venta_id')
+            ->leftJoin('productos', 'productos.id', '=', 'venta_detalles.producto_id')
+            ->whereNull('venta_detalles.deleted_at')
+            ->whereNull('ventas.deleted_at')
+            ->where('ventas.estado', 'Activo')
+            ->whereBetween('ventas.fecha', [$desde, $hasta])
+            ->whereRaw("LOWER(COALESCE(ventas.tipo_comprobante,'')) <> 'gastos'");
+
+        if (!$isAdmin) {
+            $productosVendidosQuery->where('ventas.user_id', $user->id);
+        }
+
+        $productosVendidos = $productosVendidosQuery
+            ->selectRaw("
+                venta_detalles.producto_id,
+                COALESCE(productos.nombre, MAX(venta_detalles.nombre), 'Producto eliminado') producto,
+                productos.imagen,
+                SUM(venta_detalles.cantidad) cantidad,
+                SUM(venta_detalles.cantidad * venta_detalles.precio) total
+            ")
+            ->groupBy('venta_detalles.producto_id', 'productos.nombre', 'productos.imagen')
+            ->get();
+
+        $masVendidos = $productosVendidos->sortByDesc('cantidad')->take(6)->values();
+        $menosVendidos = $productosVendidos->sortBy('cantidad')->take(6)->values();
+
         return response()->json([
             'movimientos' => $movimientos,
             'kpis' => [
@@ -130,6 +158,8 @@ class DashboardController extends Controller
             'gastosMes'     => $gastosMes,
             'usuarios'      => $ventasPorUsuario->pluck('usuario'),
             'ventasUsuarios'=> $ventasPorUsuario->pluck('total')->map(fn($v) => (float)$v),
+            'masVendidos'   => $masVendidos,
+            'menosVendidos' => $menosVendidos,
         ]);
     }
 }

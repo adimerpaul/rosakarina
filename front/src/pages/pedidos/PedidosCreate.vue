@@ -17,18 +17,36 @@
                 :options="proveedores"
                 option-label="nombre"
                 option-value="id"
+                use-input
+                input-debounce="0"
                 outlined dense clearable
                 label="Filtrar por proveedor"
                 class="q-mb-xs"
+                @filter="filtrarProveedores"
                 @update:model-value="onProveedorFiltro"
               >
                 <template #prepend><q-icon name="local_shipping"/></template>
               </q-select>
 
-              <q-input v-model="search" outlined dense debounce="300" label="Buscar producto" @update:modelValue="onSearch" clearable>
-                <template #append><q-icon name="search"/></template>
-                <template #after><q-btn flat round dense icon="refresh" @click="productosGet"/></template>
-              </q-input>
+              <div class="row q-col-gutter-xs">
+                <div class="col-7">
+                  <q-input v-model="search" outlined dense debounce="300" label="Buscar por nombre" @update:modelValue="onSearch" clearable>
+                    <template #append><q-icon name="search"/></template>
+                  </q-input>
+                </div>
+                <div class="col-5">
+                  <q-select
+                    v-model="orden"
+                    :options="opcionesOrden"
+                    emit-value
+                    map-options
+                    outlined
+                    dense
+                    label="Ordenar"
+                    @update:model-value="onOrden"
+                  />
+                </div>
+              </div>
 
               <div class="flex flex-center">
                 <q-pagination
@@ -45,7 +63,12 @@
               <div class="row q-col-gutter-xs q-mt-xs">
                 <div class="col-6 col-md-2" v-for="prod in productos" :key="prod.id">
                   <q-card flat bordered class="cursor-pointer" @click="addProducto(prod)">
-                    <q-img :src="`${$url}../images/${prod.imagen}`" style="height:120px;">
+                    <q-img :src="imagenProducto(prod)" style="height:120px;">
+                      <template #error>
+                        <div class="absolute-full flex flex-center bg-grey-3 text-grey-6">
+                          <q-icon name="medication" size="52px" />
+                        </div>
+                      </template>
                       <div class="absolute-bottom text-center" style="padding:0;margin:0;">
                         <div style="max-width:190px;line-height:0.9;">
                           {{ $filters.textUpper(prod.nombre) }}
@@ -83,7 +106,13 @@
                 <tbody>
                 <tr v-for="(it, i) in items" :key="i">
                   <td style="display:flex;align-items:center;">
-                    <q-img :src="`${$url}../images/${it.producto.imagen}`" style="height:35px;width:35px;" class="q-mr-sm"/>
+                    <q-img :src="imagenProducto(it.producto)" style="height:35px;width:35px;" class="q-mr-sm">
+                      <template #error>
+                        <div class="absolute-full flex flex-center bg-grey-3 text-grey-6">
+                          <q-icon name="medication" size="22px" />
+                        </div>
+                      </template>
+                    </q-img>
                     <div style="max-width: 220px; line-height: 0.9;">
                       <q-icon name="delete" color="red" class="cursor-pointer" @click="items.splice(i,1)" />
                       {{ $filters.textUpper(it.producto.nombre) }}
@@ -137,9 +166,12 @@
                   :options="proveedores"
                   option-label="nombre"
                   option-value="id"
+                  use-input
+                  input-debounce="0"
                   dense outlined
                   label="Proveedor"
                   :rules="[v => !!v || 'Campo requerido']"
+                  @filter="filtrarProveedores"
                   @update:model-value="syncProveedor"
                 />
               </div>
@@ -172,11 +204,18 @@ export default {
 
       productos: [],
       search: '',
+      orden: 'cantidad_asc',
+      opcionesOrden: [
+        { label: 'Menor cantidad', value: 'cantidad_asc' },
+        { label: 'Mayor cantidad', value: 'cantidad_desc' },
+        { label: 'Nombre A-Z', value: 'nombre' }
+      ],
       pagination: { page: 1, rowsPerPage: 24, rowsNumber: 0 },
 
       items: [],
 
       proveedores: [],
+      proveedoresTodos: [],
       proveedor: null,
       proveedorFiltro: null,
       telefono: '',
@@ -207,6 +246,11 @@ export default {
       this.productosGet()
     },
 
+    onOrden () {
+      this.pagination.page = 1
+      this.productosGet()
+    },
+
     productosGet () {
       this.loading = true
       this.$axios.get('productos', {
@@ -214,7 +258,8 @@ export default {
           search: this.search,
           page: this.pagination.page,
           per_page: this.pagination.rowsPerPage,
-          proveedor_id: this.proveedorFiltro?.id || undefined
+          proveedor_id: this.proveedorFiltro?.id || undefined,
+          orden: this.orden
         }
       }).then(res => {
         // si tu endpoint devuelve paginado:
@@ -224,7 +269,38 @@ export default {
     },
 
     proveedoresGet () {
-      this.$axios.get('proveedores').then(res => { this.proveedores = res.data })
+      this.$axios.get('proveedores').then(res => {
+        this.proveedoresTodos = res.data
+        this.proveedores = res.data
+      })
+    },
+
+    filtrarProveedores (valor, actualizar) {
+      actualizar(() => {
+        const busqueda = this.normalizar(valor)
+        this.proveedores = !busqueda
+          ? this.proveedoresTodos
+          : this.proveedoresTodos.filter(proveedor => {
+              return this.normalizar([
+                proveedor.nombre,
+                proveedor.ci,
+                proveedor.telefono,
+                proveedor.direccion
+              ].join(' ')).includes(busqueda)
+            })
+      })
+    },
+
+    normalizar (valor) {
+      return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+    },
+
+    imagenProducto (producto) {
+      return producto?.imagen ? `${this.$url}../images/${producto.imagen}` : '/producto-default.svg'
     },
 
     addProducto (producto) {

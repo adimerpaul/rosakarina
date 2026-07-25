@@ -1,8 +1,8 @@
 <template>
-  <q-page class="q-pa-md bg-grey-1">
+  <q-page class="q-pa-xs bg-grey-1 dashboard-compacto">
     <!-- Header + Filtros -->
-    <q-card class="q-pa-md q-mb-md shadow-1" bordered>
-      <div class="row items-center q-col-gutter-md">
+    <q-card class="q-pa-xs q-mb-xs shadow-1" bordered>
+      <div class="row items-center q-col-gutter-xs">
         <div class="col-12 col-md">
           <div class="text-h6 text-weight-bold">Dashboard</div>
           <div class="text-caption text-grey-7">Resumen de ventas y gastos</div>
@@ -43,14 +43,14 @@
     </q-card>
 
     <!-- KPIs -->
-    <div class="row q-col-gutter-md q-mb-md">
+    <div class="row q-col-gutter-xs q-mb-xs">
       <div class="col-12 col-md-4">
         <q-card class="kpi kpi-green text-white shadow-2">
-          <q-card-section class="row items-center">
-            <q-icon name="attach_money" size="28px" class="q-mr-sm" />
+          <q-card-section class="row items-center q-pa-xs">
+            <q-icon name="attach_money" size="20px" class="q-mr-xs" />
             <div>
               <div class="text-subtitle2">Ventas</div>
-              <div class="text-h5 text-weight-bold">{{ fmt(k.ventas) }} Bs</div>
+              <div class="text-subtitle1 text-weight-bold">{{ fmt(k.ventas) }} Bs</div>
             </div>
           </q-card-section>
         </q-card>
@@ -58,11 +58,11 @@
 
       <div class="col-12 col-md-4">
         <q-card class="kpi kpi-red text-white shadow-2">
-          <q-card-section class="row items-center">
-            <q-icon name="money_off" size="28px" class="q-mr-sm" />
+          <q-card-section class="row items-center q-pa-xs">
+            <q-icon name="money_off" size="20px" class="q-mr-xs" />
             <div>
               <div class="text-subtitle2">Gastos</div>
-              <div class="text-h5 text-weight-bold">{{ fmt(k.gastos) }} Bs</div>
+              <div class="text-subtitle1 text-weight-bold">{{ fmt(k.gastos) }} Bs</div>
             </div>
           </q-card-section>
         </q-card>
@@ -70,11 +70,11 @@
 
       <div class="col-12 col-md-4">
         <q-card class="kpi kpi-teal text-white shadow-2">
-          <q-card-section class="row items-center">
-            <q-icon name="trending_up" size="28px" class="q-mr-sm" />
+          <q-card-section class="row items-center q-pa-xs">
+            <q-icon name="trending_up" size="20px" class="q-mr-xs" />
             <div>
               <div class="text-subtitle2">TOTAL</div>
-              <div class="text-h5 text-weight-bold">{{ fmt(k.ganancia) }} Bs</div>
+              <div class="text-subtitle1 text-weight-bold">{{ fmt(k.ganancia) }} Bs</div>
             </div>
           </q-card-section>
         </q-card>
@@ -82,11 +82,11 @@
     </div>
 
     <!-- Charts -->
-    <div class="row q-col-gutter-md">
+    <div class="row q-col-gutter-xs">
       <!-- Movimientos diarios -->
-      <div class="col-12 col-md-6">
+      <div class="col-12 col-md-4">
         <q-card class="shadow-2">
-          <q-card-section class="row items-center justify-between">
+          <q-card-section class="row items-center justify-between q-pa-xs">
             <div>
               <div class="text-subtitle2 text-grey-8">Movimientos diarios</div>
               <div class="text-caption text-grey-7">Ventas y gastos por día</div>
@@ -98,7 +98,7 @@
           <q-card-section class="q-pa-sm" style="position: relative;">
             <apexchart
               type="bar"
-              height="300"
+              height="185"
               :options="chartOptions"
               :series="chartSeries"
             />
@@ -110,9 +110,9 @@
       </div>
 
       <!-- Ventas vs Gastos (mensual) -->
-      <div class="col-12 col-md-6">
+      <div class="col-12 col-md-4">
         <q-card class="shadow-2">
-          <q-card-section class="row items-center justify-between">
+          <q-card-section class="row items-center justify-between q-pa-xs">
             <div>
               <div class="text-subtitle2 text-grey-8">Ventas vs Gastos</div>
               <div class="text-caption text-grey-7">Serie mensual del año actual</div>
@@ -124,7 +124,7 @@
           <q-card-section class="q-pa-sm" style="position: relative;">
             <apexchart
               type="line"
-              height="300"
+              height="185"
               :options="chartLineOptions"
               :series="chartLineSeries"
             />
@@ -136,9 +136,9 @@
       </div>
 
       <!-- Ventas por usuario -->
-      <div class="col-12">
+      <div class="col-12 col-md-4">
         <q-card class="shadow-2">
-          <q-card-section class="row items-center justify-between">
+          <q-card-section class="row items-center justify-between q-pa-xs">
             <div>
               <div class="text-subtitle2 text-grey-8">Ventas por usuario</div>
               <div class="text-caption text-grey-7">Top usuarios por total vendido (solo ventas)</div>
@@ -150,7 +150,7 @@
           <q-card-section class="q-pa-sm" style="position: relative;">
             <apexchart
               type="bar"
-              height="320"
+              height="185"
               :options="chartUserOptions"
               :series="chartUserSeries"
             />
@@ -161,17 +161,85 @@
         </q-card>
       </div>
 
+      <div class="col-12 col-md-3">
+        <q-card class="shadow-2 full-height">
+          <q-card-section class="q-pa-xs">
+            <div class="text-subtitle2 text-grey-8">Productos más vendidos</div>
+            <div class="text-caption text-grey-7">Top 10 por unidades vendidas en el rango</div>
+          </q-card-section>
+          <q-separator />
+          <q-card-section class="q-pa-xs ranking-productos" style="position: relative;">
+            <div v-if="!loading && masVendidos.length === 0" class="text-center text-grey-6 q-pa-xl">
+              <q-icon name="inventory_2" size="48px" />
+              <div class="q-mt-sm">Sin ventas en el rango</div>
+            </div>
+            <div v-for="(item, index) in masVendidos" :key="`mas-${item.producto_id}`" class="producto-ranking">
+              <div class="posicion posicion-mas">{{ index + 1 }}</div>
+              <q-img :src="productoImagen(item)" ratio="1" class="producto-foto">
+                <template #error>
+                  <div class="absolute-full flex flex-center bg-grey-3 text-grey-6">
+                    <q-icon name="medication" size="34px" />
+                  </div>
+                </template>
+              </q-img>
+              <div class="producto-info">
+                <div class="text-weight-bold ellipsis-2-lines">{{ item.producto }}</div>
+                <div class="text-caption text-grey-7">{{ fmt(item.total) }} Bs vendidos</div>
+              </div>
+              <q-chip color="positive" text-color="white" icon="shopping_cart" dense>
+                {{ fmtCantidad(item.cantidad) }}
+              </q-chip>
+            </div>
+            <q-inner-loading :showing="loading"><q-spinner size="32px" /></q-inner-loading>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <q-card class="shadow-2 full-height">
+          <q-card-section class="q-pa-xs">
+            <div class="text-subtitle2 text-grey-8">Productos menos vendidos</div>
+            <div class="text-caption text-grey-7">Productos con ventas, ordenados por menor cantidad</div>
+          </q-card-section>
+          <q-separator />
+          <q-card-section class="q-pa-xs ranking-productos" style="position: relative;">
+            <div v-if="!loading && menosVendidos.length === 0" class="text-center text-grey-6 q-pa-xl">
+              <q-icon name="inventory_2" size="48px" />
+              <div class="q-mt-sm">Sin ventas en el rango</div>
+            </div>
+            <div v-for="(item, index) in menosVendidos" :key="`menos-${item.producto_id}`" class="producto-ranking">
+              <div class="posicion posicion-menos">{{ index + 1 }}</div>
+              <q-img :src="productoImagen(item)" ratio="1" class="producto-foto">
+                <template #error>
+                  <div class="absolute-full flex flex-center bg-grey-3 text-grey-6">
+                    <q-icon name="medication" size="34px" />
+                  </div>
+                </template>
+              </q-img>
+              <div class="producto-info">
+                <div class="text-weight-bold ellipsis-2-lines">{{ item.producto }}</div>
+                <div class="text-caption text-grey-7">{{ fmt(item.total) }} Bs vendidos</div>
+              </div>
+              <q-chip color="orange-8" text-color="white" icon="shopping_cart" dense>
+                {{ fmtCantidad(item.cantidad) }}
+              </q-chip>
+            </div>
+            <q-inner-loading :showing="loading"><q-spinner size="32px" /></q-inner-loading>
+          </q-card-section>
+        </q-card>
+      </div>
+
       <!-- Últimos movimientos -->
-      <div class="col-12">
-        <q-card class="shadow-2">
-          <q-card-section class="row items-center justify-between">
+      <div class="col-12 col-md-6">
+        <q-card class="shadow-2 full-height">
+          <q-card-section class="row items-center justify-between q-pa-xs">
             <div class="text-subtitle1 text-weight-bold text-grey-8">Últimos movimientos</div>
             <div class="text-caption text-grey-7">{{ rangoLegible }}</div>
           </q-card-section>
 
           <q-separator />
 
-          <q-card-section class="q-pa-none">
+          <q-card-section class="q-pa-none movimientos-compactos">
             <q-markup-table dense wrap-cells>
               <thead>
               <tr class="bg-primary text-white">
@@ -247,6 +315,8 @@ export default {
       // data
       movimientos: [],
       k: { ventas: 0, gastos: 0, ganancia: 0 },
+      masVendidos: [],
+      menosVendidos: [],
 
       // bar diario (2 series)
       chartSeries: [
@@ -307,6 +377,15 @@ export default {
   methods: {
     fmt (n) {
       return Number(n || 0).toFixed(2)
+    },
+
+    fmtCantidad (n) {
+      const cantidad = Number(n || 0)
+      return Number.isInteger(cantidad) ? cantidad : cantidad.toFixed(2)
+    },
+
+    productoImagen (item) {
+      return item.imagen ? `${this.$url}../images/${item.imagen}` : ''
     },
 
     esGasto (v) {
@@ -385,6 +464,9 @@ export default {
           xaxis: { ...this.chartUserOptions.xaxis, categories: data.usuarios || [] }
         }
         this.chartUserSeries = [{ name: 'Ventas', data: data.ventasUsuarios || [] }]
+
+        this.masVendidos = data.masVendidos || []
+        this.menosVendidos = data.menosVendidos || []
       } catch (e) {
         this.$q.notify({ type: 'negative', message: 'Error al cargar dashboard' })
       } finally {
@@ -396,8 +478,82 @@ export default {
 </script>
 
 <style scoped>
-.kpi { border-radius: 18px; }
+.kpi { border-radius: 8px; }
 .kpi-green { background: linear-gradient(135deg, #43a047, #2e7d32); }
 .kpi-red   { background: linear-gradient(135deg, #e53935, #b71c1c); }
 .kpi-teal  { background: linear-gradient(135deg, #00897b, #00695c); }
+.ranking-productos {
+  min-height: 240px;
+}
+.producto-ranking {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px;
+  margin-bottom: 3px;
+  border: 1px solid #eceff1;
+  border-radius: 6px;
+  background: white;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.producto-ranking:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(0, 0, 0, .08);
+}
+.producto-foto {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 5px;
+  background: #f5f5f5;
+}
+.producto-info {
+  min-width: 0;
+  flex: 1;
+}
+.posicion {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  font-weight: 700;
+  font-size: 10px;
+}
+.posicion-mas { background: #2e7d32; }
+.posicion-menos { background: #ef6c00; }
+.dashboard-compacto :deep(.q-card) {
+  border-radius: 7px;
+}
+.dashboard-compacto :deep(.text-caption) {
+  line-height: 1.15;
+}
+.dashboard-compacto :deep(.q-chip) {
+  margin: 1px;
+  font-size: 10px;
+}
+.movimientos-compactos {
+  max-height: 285px;
+  overflow: auto;
+}
+.movimientos-compactos :deep(th),
+.movimientos-compactos :deep(td) {
+  height: 28px;
+  padding: 2px 5px;
+  font-size: 11px;
+}
+@media (max-width: 599px) {
+  .producto-foto {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+  .producto-ranking {
+    gap: 5px;
+    padding: 4px;
+  }
+}
 </style>

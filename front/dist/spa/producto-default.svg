@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <rect width="300" height="300" rx="24" fill="#f1f5f4"/>
+  <circle cx="150" cy="132" r="72" fill="#dce9e5"/>
+  <path d="M119 81h62v102h-62z" rx="12" fill="#fff"/>
+  <path d="M129 101h42v15h-42zm0 29h42v15h-42zm0 29h28v15h-28z" fill="#49a389"/>
+  <path d="M96 221c19-24 89-24 108 0" fill="none" stroke="#8abdaf" stroke-width="15" stroke-linecap="round"/>
+  <text x="150" y="267" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#55756d">SIN IMAGEN</text>
+</svg>

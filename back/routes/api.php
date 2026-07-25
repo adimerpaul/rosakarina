@@ -116,5 +116,5 @@ Route::get('receta/{id}/pdf', [App\Http\Controllers\RecetaController::class, 'ge
 Route::get('pacientes/{paciente}/proforma-pdf', [\App\Http\Controllers\VentaController::class, 'proformaPacientePdf']);
 
 Route::get('productos-pdf', [App\Http\Controllers\ProductoController::class, 'productosPdf']);
-
+Route::get('productos-por-vencer-pdf', [App\Http\Controllers\CompraController::class, 'productosPorVencerPdf']);
 

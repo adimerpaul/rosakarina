@@ -6,6 +6,7 @@ use App\Models\Compra;
 use App\Models\CompraDetalle;
 use App\Models\Producto;
 use App\Models\Proveedor;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,27 +22,79 @@ class CompraController extends Controller{
     }
     public function productosPorVencer(Request $request)
     {
+        return response()->json($this->consultarProductosPorVencer($request));
+    }
+
+    public function productosPorVencerPdf(Request $request)
+    {
+        $productos = $this->consultarProductosPorVencer($request);
+
+        return Pdf::loadView('pdf.productos_por_vencer', [
+            'productos' => $productos,
+            'dias' => (int) ($request->dias ?? 5),
+            'buscar' => trim((string) $request->input('buscar', '')),
+            'fecha' => now()->format('d/m/Y H:i'),
+        ])->setPaper('letter', 'landscape')
+            ->stream('productos_por_vencer.pdf');
+    }
+
+    private function consultarProductosPorVencer(Request $request)
+    {
         $dias = (int) ($request->dias ?? 5);
         $proveedorId = $request->proveedor_id;
+        $buscar = trim((string) $request->input('buscar', ''));
+        $fechaPorDiasRestantes = null;
+
+        if (preg_match('/^(-?\d+)\s*(d[ií]as?)?$/iu', $buscar, $coincidencia)) {
+            $fechaPorDiasRestantes = Carbon::now()
+                ->addDays((int) $coincidencia[1])
+                ->format('Y-m-d');
+        }
 
         $hoy = Carbon::now();
         $limite = $hoy->copy()->addDays($dias);
 
         $productos = CompraDetalle::with(['producto', 'proveedor', 'compra'])
             ->whereNotNull('fecha_vencimiento')
-            ->whereBetween('fecha_vencimiento', [
-                $hoy->format('Y-m-d'),
-                $limite->format('Y-m-d')
-            ])
+            ->when($buscar === '', function ($q) use ($hoy, $limite) {
+                $q->whereBetween('fecha_vencimiento', [
+                    $hoy->format('Y-m-d'),
+                    $limite->format('Y-m-d')
+                ]);
+            })
             ->where('cantidad_venta', '>', 0)
             ->where('estado', 'Activo')
             ->when($proveedorId, function ($q) use ($proveedorId) {
                 $q->where('proveedor_id', $proveedorId);
             })
+            ->when($buscar !== '', function ($q) use ($buscar, $fechaPorDiasRestantes) {
+                $q->where(function ($subQuery) use ($buscar, $fechaPorDiasRestantes) {
+                    $subQuery
+                        ->where('lote', 'like', "%{$buscar}%")
+                        ->orWhere('cantidad_venta', 'like', "%{$buscar}%")
+                        ->orWhere('fecha_vencimiento', 'like', "%{$buscar}%")
+                        ->orWhere('estado', 'like', "%{$buscar}%")
+                        ->orWhereHas('producto', function ($productoQuery) use ($buscar) {
+                            $productoQuery->where('nombre', 'like', "%{$buscar}%");
+                        })
+                        ->orWhereHas('proveedor', function ($proveedorQuery) use ($buscar) {
+                            $proveedorQuery->where('nombre', 'like', "%{$buscar}%");
+                        })
+                        ->orWhereHas('compra', function ($compraQuery) use ($buscar) {
+                            $compraQuery
+                                ->where('nro_factura', 'like', "%{$buscar}%")
+                                ->orWhere('fecha', 'like', "%{$buscar}%");
+                        });
+
+                    if ($fechaPorDiasRestantes) {
+                        $subQuery->orWhereDate('fecha_vencimiento', $fechaPorDiasRestantes);
+                    }
+                });
+            })
             ->orderBy('fecha_vencimiento')
             ->get();
 
-        return response()->json($productos);
+        return $productos;
     }
 
     public function productosVencidos(Request $request)

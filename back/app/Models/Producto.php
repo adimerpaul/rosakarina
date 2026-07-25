@@ -16,6 +16,10 @@ class Producto extends Model{
         'stock_minimo',
         'stock_maximo',
         'imagen',
+        'activo',
+    ];
+    protected $casts = [
+        'activo' => 'boolean',
     ];
     protected $hidden = [
         'created_at',
